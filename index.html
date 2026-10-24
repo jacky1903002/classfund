@@ -64,10 +64,19 @@
           <i class="fa-solid fa-graduation-cap"></i>
         </div>
         <h2 class="text-2xl font-black text-amber-950 tracking-tight" id="authTitle">班費收支紀錄系統</h2>
-        <p class="text-sm font-medium text-stone-500 mt-1">請輸入帳號密碼以進入系統</p>
+        <p class="text-sm font-medium text-stone-500 mt-1" id="authSubtitle">請輸入帳號密碼以進入專屬系統</p>
       </div>
 
-      <form id="authForm" class="space-y-5" onsubmit="handleAuthSubmit(event)">
+      <form id="authForm" class="space-y-4" onsubmit="handleAuthSubmit(event)">
+        <!-- 真實姓名 (僅在註冊模式顯示) -->
+        <div id="nameFieldGroup" class="hidden">
+          <label class="block text-xs font-bold uppercase tracking-wider text-amber-900 mb-1.5">真實姓名 (Real Name)</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400"></i>
+            <input type="text" id="authDisplayName" class="w-full pl-10 pr-4 py-3 text-sm rounded-xl border border-stone-200 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition font-medium text-stone-700 bg-white" placeholder="請輸入您的真實姓名" />
+          </div>
+        </div>
+
         <div>
           <label class="block text-xs font-bold uppercase tracking-wider text-amber-900 mb-1.5">電子郵件 (Email)</label>
           <div class="relative">
@@ -89,7 +98,7 @@
           <span id="authErrorMsg"></span>
         </div>
 
-        <button type="submit" id="authBtn" class="w-full bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold py-3.5 rounded-xl shadow-md shadow-amber-200 transition duration-150 tracking-wide text-sm">
+        <button type="submit" id="authBtn" class="w-full bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold py-3.5 rounded-xl shadow-md shadow-amber-200 transition duration-150 tracking-wide text-sm mt-2">
           登入系統
         </button>
       </form>
@@ -136,8 +145,8 @@
       <!-- User Info & Sign Out -->
       <div class="flex items-center space-x-3">
         <div class="hidden md:flex flex-col text-right">
-          <span class="text-[9px] uppercase font-bold text-amber-700/60 tracking-wider">管理者帳號</span>
-          <span id="userEmailDisplay" class="text-xs font-bold text-amber-950">--</span>
+          <span id="userDisplayName" class="text-xs font-black text-amber-950">--</span>
+          <span id="userEmailDisplay" class="text-[10px] font-semibold text-stone-400">--</span>
         </div>
         <button onclick="handleSignOut()" class="bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold px-3.5 py-2 rounded-xl transition border border-amber-200/80 flex items-center gap-1.5 shadow-sm">
           <i class="fa-solid fa-right-from-bracket"></i>
@@ -365,7 +374,8 @@
       signInWithEmailAndPassword, 
       createUserWithEmailAndPassword, 
       signOut, 
-      onAuthStateChanged 
+      onAuthStateChanged,
+      updateProfile
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { 
       getDatabase, 
@@ -391,13 +401,14 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // Global App State with Multi-Sheet Support
+    // Global App State with Multi-Sheet Support & Data Isolation
     window.appState = {
       activeTab: 'details',
       selectedChartType: 'balance', // balance | income | expense
       selectedChartScope: 'current', // current | all
       activeSheetIndex: 0,
       user: null,
+      displayName: "",
       isRegisterMode: false,
       logoUrl: "",
       sheets: [
@@ -536,20 +547,29 @@
     window.toggleAuthMode = function() {
       window.appState.isRegisterMode = !window.appState.isRegisterMode;
       const title = document.getElementById('authTitle');
+      const subtitle = document.getElementById('authSubtitle');
       const btn = document.getElementById('authBtn');
       const toggleText = document.getElementById('authToggleText');
       const toggleBtn = document.getElementById('authToggleBtn');
+      const nameGroup = document.getElementById('nameFieldGroup');
+      const nameInput = document.getElementById('authDisplayName');
 
       if (window.appState.isRegisterMode) {
-        title.innerText = "註冊系統新帳號";
-        btn.innerText = "立即註冊並登入";
+        title.innerText = "註冊專屬新帳號";
+        subtitle.innerText = "填寫真實姓名即可無須審核直接使用";
+        btn.innerText = "完成註冊並登入";
         toggleText.innerText = "已有帳號？";
         toggleBtn.innerText = "返回登入";
+        nameGroup.classList.remove('hidden');
+        nameInput.setAttribute('required', 'required');
       } else {
         title.innerText = "班費收支紀錄系統";
+        subtitle.innerText = "請輸入帳號密碼以進入專屬系統";
         btn.innerText = "登入系統";
         toggleText.innerText = "尚未擁有帳號？";
         toggleBtn.innerText = "立即註冊";
+        nameGroup.classList.add('hidden');
+        nameInput.removeAttribute('required');
       }
     };
 
@@ -557,6 +577,7 @@
       e.preventDefault();
       const email = document.getElementById('authEmail').value.trim();
       const password = document.getElementById('authPassword').value;
+      const displayName = document.getElementById('authDisplayName').value.trim();
       const errorDiv = document.getElementById('authError');
       const errorMsg = document.getElementById('authErrorMsg');
 
@@ -564,7 +585,14 @@
 
       try {
         if (window.appState.isRegisterMode) {
-          await createUserWithEmailAndPassword(auth, email, password);
+          if (!displayName) {
+            errorDiv.classList.remove('hidden');
+            errorMsg.innerText = "請輸入您的真實姓名";
+            return;
+          }
+          const userCred = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(userCred.user, { displayName: displayName });
+          window.appState.displayName = displayName;
         } else {
           await signInWithEmailAndPassword(auth, email, password);
         }
@@ -587,7 +615,7 @@
         case 'auth/invalid-email':
           return '無效的電子郵件格式';
         default:
-          return '登入失敗：' + code;
+          return '認證失敗：' + code;
       }
     }
 
@@ -600,15 +628,19 @@
       window.appState.user = user;
       const authModal = document.getElementById('authModal');
       const userEmailDisplay = document.getElementById('userEmailDisplay');
+      const userDisplayName = document.getElementById('userDisplayName');
 
       if (user) {
         authModal.classList.add('hidden');
         userEmailDisplay.innerText = user.email;
+        userDisplayName.innerText = user.displayName || user.email.split('@')[0];
+        window.appState.displayName = user.displayName || user.email.split('@')[0];
         setupRealtimeDatabaseListener(user.uid);
         setupConnectedStatusListener();
       } else {
         authModal.classList.remove('hidden');
         userEmailDisplay.innerText = '--';
+        userDisplayName.innerText = '--';
       }
     });
 
@@ -631,10 +663,13 @@
         const data = snapshot.val();
         if (data) {
           if (data.logoUrl !== undefined) window.appState.logoUrl = data.logoUrl;
+          if (data.displayName) {
+            window.appState.displayName = data.displayName;
+            document.getElementById('userDisplayName').innerText = data.displayName;
+          }
           if (Array.isArray(data.sheets) && data.sheets.length > 0) {
             window.appState.sheets = data.sheets;
           } else if (data.rows) {
-            // Migration fallback from single-sheet version
             window.appState.sheets = [{
               id: 'sheet_1',
               name: data.sheetName || '班費明細',
@@ -659,6 +694,7 @@
       const timeString = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
       const payload = {
+        displayName: window.appState.displayName || "",
         logoUrl: window.appState.logoUrl || "",
         sheets: window.appState.sheets,
         lastSaved: timeString
@@ -959,7 +995,6 @@
       const scope = window.appState.selectedChartScope || 'current';
 
       if (scope === 'all') {
-        // Collect rows across all sheets and sort by date
         window.appState.sheets.forEach(s => {
           targetRows.push(...(s.rows || []));
         });
