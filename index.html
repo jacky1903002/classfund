@@ -1037,7 +1037,7 @@
         activeChartInstance.destroy();
       }
 
-      const scopeText = scope === 'all' ? '【跨全部工作表彙整】' : `【${activeSheet.name}】`;
+      const scopeText = scope === 'all' ? '【跨全部工作表彙整】' : '【統計】';
 
       let chartConfig = {
         label: '',
@@ -1139,7 +1139,7 @@
         income: '逐日累積收入',
         expense: '逐日累積支出'
       };
-      const scope = window.appState.selectedChartScope === 'all' ? '全部彙整' : activeSheet.name;
+      const scope = window.appState.selectedChartScope === 'all' ? '全部彙整' : '統計';
       const name = typeNames[window.appState.selectedChartType] || '財務圖表';
       const link = document.createElement('a');
       link.download = `${scope}_${name}.png`;
