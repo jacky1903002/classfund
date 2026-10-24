@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>班費收支紀錄系統</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS for Excel Import/Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- html2pdf.js for PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+    }
+    .drag-handle {
+      cursor: grab;
+    }
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+    tr.dragging {
+      opacity: 0.5;
+      background-color: #f3f4f6;
+    }
+    .editable-cell:focus {
+      outline: 2px solid #3b82f6;
+      background-color: #eff6ff;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Authentication Modal -->
+  <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-100">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+          <i class="fa-solid font-bold fa-wallet"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800" id="authTitle">班費收支紀錄系統</h2>
+        <p class="text-sm text-slate-500 mt-1">請先登入電子郵件帳號密碼以繼續</p>
+      </div>
+
+      <form id="authForm" class="space-y-4" onsubmit="handleAuthSubmit(event)">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">電子郵件 (Email)</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="email" id="authEmail" required class="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="name@example.com" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">密碼 (Password)</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="password" id="authPassword" required minlength="6" class="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div id="authError" class="hidden text-xs text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 flex items-center gap-2">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="authErrorMsg"></span>
+        </div>
+
+        <button type="submit" id="authBtn" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition duration-150">
+          登入系統
+        </button>
+      </form>
+
+      <div class="mt-6 text-center text-sm text-slate-500">
+        <span id="authToggleText">尚未擁有帳號？</span>
+        <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" class="text-blue-600 font-semibold hover:underline ml-1">
+          立即註冊
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand & Editable Sheet Name -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 text-white p-2 rounded-xl shadow-md">
+          <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-semibold px-2 py-0.5 bg-blue-50 text-blue-700 rounded border border-blue-200">工作表</span>
+            <span id="sheetName" title="雙擊可編輯工作表名稱" ondblclick="makeEditable(this, 'sheetName')" class="text-lg font-bold text-slate-800 hover:bg-slate-100 px-1.5 py-0.5 rounded cursor-pointer transition border border-transparent hover:border-slate-300">班費收支明細表</span>
+          </div>
+          <div class="flex items-center space-x-4 text-xs text-slate-500 mt-0.5">
+            <span id="connectionStatus" class="flex items-center gap-1.5 font-medium text-amber-600">
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> 連線中...
+            </span>
+            <span id="lastSavedStatus" class="hidden sm:inline">上次儲存時間：--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Info & Sign Out -->
+      <div class="flex items-center space-x-3">
+        <div class="hidden md:flex flex-col text-right">
+          <span class="text-xs text-slate-400">登入使用者</span>
+          <span id="userEmailDisplay" class="text-xs font-semibold text-slate-700">--</span>
+        </div>
+        <button onclick="handleSignOut()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>登出</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Action Toolbar & Summary Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      
+      <!-- Summary Cards -->
+      <div class="bg-emerald-50 border border-emerald-200/60 rounded-2xl p-4 flex items-center space-x-4 shadow-sm">
+        <div class="bg-emerald-500 text-white p-3 rounded-xl shadow-md">
+          <i class="fa-solid fa-arrow-down text-lg"></i>
+        </div>
+        <div>
+          <p class="text-xs text-emerald-700 font-semibold">總收入</p>
+          <p class="text-2xl font-bold text-emerald-900" id="statTotalIncome">$0</p>
+        </div>
+      </div>
+
+      <div class="bg-rose-50 border border-rose-200/60 rounded-2xl p-4 flex items-center space-x-4 shadow-sm">
+        <div class="bg-rose-500 text-white p-3 rounded-xl shadow-md">
+          <i class="fa-solid fa-arrow-up text-lg"></i>
+        </div>
+        <div>
+          <p class="text-xs text-rose-700 font-semibold">總支出</p>
+          <p class="text-2xl font-bold text-rose-900" id="statTotalExpense">$0</p>
+        </div>
+      </div>
+
+      <div class="bg-blue-50 border border-blue-200/60 rounded-2xl p-4 flex items-center space-x-4 shadow-sm">
+        <div class="bg-blue-600 text-white p-3 rounded-xl shadow-md">
+          <i class="fa-solid fa-scale-balanced text-lg"></i>
+        </div>
+        <div>
+          <p class="text-xs text-blue-700 font-semibold">目前累積結餘</p>
+          <p class="text-2xl font-bold text-blue-900" id="statBalance">$0</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Toolbar -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-3 flex flex-wrap items-center justify-around gap-2 shadow-sm">
+        <button onclick="addRow()" class="flex-1 min-w-[100px] bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/10">
+          <i class="fa-solid fa-plus"></i> 新增明細
+        </button>
+
+        <label class="flex-1 min-w-[100px] bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/10">
+          <i class="fa-solid fa-file-excel"></i> 匯入 Excel
+          <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="importExcel(event)" />
+        </label>
+
+        <button onclick="exportExcel()" class="flex-1 min-w-[100px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-file-export"></i> 匯出 Excel
+        </button>
+
+        <button onclick="exportPDF()" class="flex-1 min-w-[100px] bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-file-pdf"></i> 匯出 PDF
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Table Container -->
+    <div id="pdfExportArea" class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden p-6">
+      
+      <!-- Editable Title Banner -->
+      <div class="mb-6 text-center border-b border-slate-100 pb-4">
+        <h1 id="headerTitle" title="雙擊可編輯標題" ondblclick="makeEditable(this, 'headerTitle')" class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight hover:bg-slate-100 px-3 py-1 rounded inline-block cursor-pointer transition border border-transparent hover:border-slate-300">
+          三年五班第一學期班費收支明細表
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">💡 雙擊表格內容即可直接編輯 | 雙擊日期欄位彈出日曆</p>
+      </div>
+
+      <!-- Main Data Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 uppercase text-xs font-bold border-y border-slate-200 select-none">
+              <th class="py-3.5 px-3 w-10 text-center"></th>
+              <th class="py-3.5 px-4 w-36 border-r border-slate-200">日期</th>
+              <th class="py-3.5 px-4 border-r border-slate-200">項目</th>
+              <th class="py-3.5 px-4 w-32 border-r border-slate-200 text-right">收入</th>
+              <th class="py-3.5 px-4 w-32 border-r border-slate-200 text-right">支出</th>
+              <th class="py-3.5 px-4 w-36 border-r border-slate-200 text-right">累計結餘</th>
+              <th class="py-3.5 px-4 border-r border-slate-200">備註</th>
+              <th class="py-3.5 px-3 w-12 text-center">操作</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-slate-200 font-medium">
+            <!-- Rows injected dynamically via JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Analytics Section -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-100">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-blue-600"></i> 分析圖表
+          </h2>
+          <p class="text-xs text-slate-400">顯示逐日累積結餘、累積收入與累積支出變化</p>
+        </div>
+        <button onclick="exportChartPNG()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-md">
+          <i class="fa-solid fa-download"></i> 匯出圖表 PNG
+        </button>
+      </div>
+
+      <div class="relative w-full h-[360px]">
+        <canvas id="financeChart"></canvas>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 mt-auto">
+    班費收支紀錄系統 &copy; 2026. 資料即時同步至 Firebase Realtime Database.
+  </footer>
+
+  <!-- Firebase Web SDK Modular (v11.6.1) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      createUserWithEmailAndPassword, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      getDatabase, 
+      ref, 
+      set, 
+      onValue 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAuQWqQJkp3e8tA3xXxfNR0AOzelggFjXk",
+      authDomain: "classfund-584ea.firebaseapp.com",
+      databaseURL: "https://classfund-584ea-default-rtdb.firebaseio.com",
+      projectId: "classfund-584ea",
+      storageBucket: "classfund-584ea.firebasestorage.app",
+      messagingSenderId: "452668466442",
+      appId: "1:452668466442:web:cf0004b4a5c8a26dc246f3",
+      measurementId: "G-EWB9CDB1RY"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // Global App State
+    window.appState = {
+      user: null,
+      isRegisterMode: false,
+      sheetName: "班費收支明細表",
+      headerTitle: "三年五班第一學期班費收支明細表",
+      rows: [
+        { id: '1', date: '2026/10/01', item: '期初收取班費', income: 5000, expense: 0, note: '全班每人100元' },
+        { id: '2', date: '2026/10/05', item: '購買班級掃具', income: 0, expense: 450, note: '掃把與拖把' },
+        { id: '3', date: '2026/10/12', item: '班會飲料費用', income: 0, expense: 600, note: '慶生會紅茶' }
+      ]
+    };
+
+    let chartInstance = null;
+    let dragSrcIndex = null;
+
+    // --- Authentication Logic ---
+    window.toggleAuthMode = function() {
+      window.appState.isRegisterMode = !window.appState.isRegisterMode;
+      const isReg = window.appState.isRegisterMode;
+      document.getElementById('authTitle').innerText = isReg ? '註冊新帳號' : '班費收支紀錄系統';
+      document.getElementById('authBtn').innerText = isReg ? '註冊並登入' : '登入系統';
+      document.getElementById('authToggleText').innerText = isReg ? '已有帳號？' : '尚未擁有帳號？';
+      document.getElementById('authToggleBtn').innerText = isReg ? '立即登入' : '立即註冊';
+      document.getElementById('authError').classList.add('hidden');
+    };
+
+    window.handleAuthSubmit = async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errorBox = document.getElementById('authError');
+      const errorMsg = document.getElementById('authErrorMsg');
+
+      errorBox.classList.add('hidden');
+
+      try {
+        if (window.appState.isRegisterMode) {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (err) {
+        errorBox.classList.remove('hidden');
+        errorMsg.innerText = getFriendlyAuthError(err.code);
+      }
+    };
+
+    window.handleSignOut = function() {
+      signOut(auth);
+    };
+
+    function getFriendlyAuthError(code) {
+      switch (code) {
+        case 'auth/invalid-email': return '請輸入有效的電子郵件地址。';
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential': return '帳號或密碼錯誤。';
+        case 'auth/email-already-in-use': return '此電子郵件已被註冊。';
+        case 'auth/weak-password': return '密碼長度需至少包含 6 個字元。';
+        default: return '身份驗證失敗，請稍後再試。';
+      }
+    }
+
+    // --- Auth Listener & Database Binding ---
+    onAuthStateChanged(auth, (user) => {
+      window.appState.user = user;
+      const authModal = document.getElementById('authModal');
+      
+      if (user) {
+        authModal.classList.add('hidden');
+        document.getElementById('userEmailDisplay').innerText = user.email;
+        setupDatabaseListeners(user.uid);
+        setupConnectionMonitor();
+      } else {
+        authModal.classList.remove('hidden');
+        document.getElementById('userEmailDisplay').innerText = '--';
+      }
+    });
+
+    // Monitor Firebase Realtime Connection Status
+    function setupConnectionMonitor() {
+      const connectedRef = ref(db, ".info/connected");
+      onValue(connectedRef, (snap) => {
+        const connected = snap.val() === true;
+        const statusEl = document.getElementById('connectionStatus');
+        if (connected) {
+          statusEl.className = "flex items-center gap-1.5 font-medium text-emerald-600";
+          statusEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 🟢 已連線`;
+        } else {
+          statusEl.className = "flex items-center gap-1.5 font-medium text-rose-600";
+          statusEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> 🔴 斷線`;
+        }
+      });
+    }
+
+    // Listen to Firebase Realtime Database Data
+    function setupDatabaseListeners(uid) {
+      const userRef = ref(db, `classfund/${uid}`);
+      onValue(userRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          if (data.sheetName) window.appState.sheetName = data.sheetName;
+          if (data.headerTitle) window.appState.headerTitle = data.headerTitle;
+          if (Array.isArray(data.rows)) window.appState.rows = data.rows;
+          if (data.lastSaved) {
+            document.getElementById('lastSavedStatus').innerText = `上次儲存時間：${data.lastSaved}`;
+          }
+        } else {
+          // Push initial template data for new user
+          saveDataToFirebase();
+        }
+        renderApp();
+      });
+    }
+
+    // Auto Save Data to Firebase
+    window.saveDataToFirebase = function() {
+      if (!window.appState.user) return;
+      const uid = window.appState.user.uid;
+      const nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
+      
+      const payload = {
+        sheetName: window.appState.sheetName,
+        headerTitle: window.appState.headerTitle,
+        rows: window.appState.rows,
+        lastSaved: nowStr
+      };
+
+      set(ref(db, `classfund/${uid}`), payload)
+        .then(() => {
+          document.getElementById('lastSavedStatus').innerText = `上次儲存時間：${nowStr}`;
+        })
+        .catch((err) => console.error("Firebase Sync Error:", err));
+    };
+
+    // --- Core Rendering & UI Updates ---
+    function renderApp() {
+      document.getElementById('sheetName').innerText = window.appState.sheetName;
+      document.getElementById('headerTitle').innerText = window.appState.headerTitle;
+
+      renderTable();
+      updateSummaryAndChart();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      let runningBalance = 0;
+
+      window.appState.rows.forEach((row, index) => {
+        const income = Math.round(Number(row.income) || 0);
+        const expense = Math.round(Number(row.expense) || 0);
+        runningBalance += (income - expense);
+        row.balance = runningBalance; // auto calculated
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/80 transition group border-b border-slate-200";
+        tr.draggable = true;
+        tr.dataset.index = index;
+
+        // Drag handlers
+        tr.addEventListener('dragstart', handleDragStart);
+        tr.addEventListener('dragover', handleDragOver);
+        tr.addEventListener('drop', handleDrop);
+        tr.addEventListener('dragend', handleDragEnd);
+
+        tr.innerHTML = `
+          <td class="py-3 px-3 text-center text-slate-400 drag-handle select-none">
+            <i class="fa-solid fa-grip-vertical hover:text-slate-600"></i>
+          </td>
+          <td class="py-3 px-4 border-r border-slate-200 cursor-pointer font-mono text-slate-700" ondblclick="triggerDatePicker(this, ${index})">
+            ${row.date || '2026/10/25'}
+          </td>
+          <td class="py-3 px-4 border-r border-slate-200 editable-cell cursor-text" contenteditable="true" onblur="updateRowField(${index}, 'item', this.innerText)">
+            ${escapeHtml(row.item || '')}
+          </td>
+          <td class="py-3 px-4 border-r border-slate-200 text-right editable-cell cursor-text font-mono text-emerald-600 font-semibold" contenteditable="true" onblur="updateNumberField(${index}, 'income', this.innerText)">
+            ${income}
+          </td>
+          <td class="py-3 px-4 border-r border-slate-200 text-right editable-cell cursor-text font-mono text-rose-600 font-semibold" contenteditable="true" onblur="updateNumberField(${index}, 'expense', this.innerText)">
+            ${expense}
+          </td>
+          <td class="py-3 px-4 border-r border-slate-200 text-right font-mono font-bold ${runningBalance < 0 ? 'text-rose-600' : 'text-blue-700'} bg-slate-50/50 select-none">
+            ${runningBalance}
+          </td>
+          <td class="py-3 px-4 border-r border-slate-200 editable-cell cursor-text text-slate-600" contenteditable="true" onblur="updateRowField(${index}, 'note', this.innerText)">
+            ${escapeHtml(row.note || '')}
+          </td>
+          <td class="py-3 px-3 text-center">
+            <button onclick="deleteRow(${index})" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg transition" title="刪除明細">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // --- Double-Click Field Editing ---
+    window.makeEditable = function(el, key) {
+      const currentText = el.innerText;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentText;
+      input.className = 'border border-blue-500 rounded px-2 py-0.5 text-slate-800 font-bold focus:outline-none w-full max-w-md';
+      
+      input.onblur = function() {
+        const val = input.value.trim() || currentText;
+        window.appState[key] = val;
+        saveDataToFirebase();
+        renderApp();
+      };
+
+      input.onkeydown = function(e) {
+        if (e.key === 'Enter') input.blur();
+      };
+
+      el.innerHTML = '';
+      el.appendChild(input);
+      input.focus();
+    };
+
+    // Date Picker Trigger
+    window.triggerDatePicker = function(tdElement, index) {
+      const currentDateStr = window.appState.rows[index].date || '2026/10/25';
+      const formattedDate = currentDateStr.replace(/\//g, '-');
+
+      const dateInput = document.createElement('input');
+      dateInput.type = 'date';
+      dateInput.value = formattedDate;
+      dateInput.className = 'text-xs border border-blue-500 rounded px-1 py-0.5 outline-none font-mono';
+
+      dateInput.onchange = function() {
+        if (dateInput.value) {
+          window.appState.rows[index].date = dateInput.value.replace(/-/g, '/');
+          saveDataToFirebase();
+          renderApp();
+        }
+      };
+
+      dateInput.onblur = function() {
+        renderTable();
+      };
+
+      tdElement.innerHTML = '';
+      tdElement.appendChild(dateInput);
+      dateInput.focus();
+      dateInput.showPicker?.();
+    };
+
+    // Table Data Mutations
+    window.updateRowField = function(index, key, val) {
+      const cleanVal = val.trim();
+      if (window.appState.rows[index][key] !== cleanVal) {
+        window.appState.rows[index][key] = cleanVal;
+        saveDataToFirebase();
+        updateSummaryAndChart();
+      }
+    };
+
+    window.updateNumberField = function(index, key, val) {
+      let num = Math.round(parseFloat(val.replace(/[^0-9.-]/g, '')) || 0);
+      if (num < 0) num = 0;
+      window.appState.rows[index][key] = num;
+      saveDataToFirebase();
+      renderApp();
+    };
+
+    window.addRow = function() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+
+      window.appState.rows.push({
+        id: Date.now().toString(),
+        date: `${yyyy}/${mm}/${dd}`,
+        item: '新項目',
+        income: 0,
+        expense: 0,
+        note: ''
+      });
+      saveDataToFirebase();
+      renderApp();
+    };
+
+    window.deleteRow = function(index) {
+      window.appState.rows.splice(index, 1);
+      saveDataToFirebase();
+      renderApp();
+    };
+
+    // --- Drag & Drop Reordering ---
+    function handleDragStart(e) {
+      dragSrcIndex = Number(this.dataset.index);
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      return false;
+    }
+
+    function handleDrop(e) {
+      if (e.stopPropagation) e.stopPropagation();
+      const targetIndex = Number(this.dataset.index);
+
+      if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+        const movedItem = window.appState.rows.splice(dragSrcIndex, 1)[0];
+        window.appState.rows.splice(targetIndex, 0, movedItem);
+        saveDataToFirebase();
+        renderApp();
+      }
+      return false;
+    }
+
+    function handleDragEnd() {
+      this.classList.remove('dragging');
+      dragSrcIndex = null;
+    }
+
+    // --- Analytics Summary & Chart.js Visualizer ---
+    function updateSummaryAndChart() {
+      let totalIncome = 0;
+      let totalExpense = 0;
+
+      const chartLabels = [];
+      const balanceData = [];
+      const incomeCumulativeData = [];
+      const expenseCumulativeData = [];
+
+      let runningBal = 0;
+      let cumIncome = 0;
+      let cumExpense = 0;
+
+      window.appState.rows.forEach(r => {
+        const inc = Math.round(Number(r.income) || 0);
+        const exp = Math.round(Number(r.expense) || 0);
+
+        totalIncome += inc;
+        totalExpense += exp;
+        runningBal += (inc - exp);
+
+        cumIncome += inc;
+        cumExpense += exp;
+
+        chartLabels.push(r.date || '無日期');
+        balanceData.push(runningBal);
+        incomeCumulativeData.push(cumIncome);
+        expenseCumulativeData.push(cumExpense);
+      });
+
+      // Update Cards
+      document.getElementById('statTotalIncome').innerText = `$${totalIncome.toLocaleString()}`;
+      document.getElementById('statTotalExpense').innerText = `$${totalExpense.toLocaleString()}`;
+      document.getElementById('statBalance').innerText = `$${(totalIncome - totalExpense).toLocaleString()}`;
+
+      // Render Chart
+      const ctx = document.getElementById('financeChart').getContext('2d');
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartLabels,
+          datasets: [
+            {
+              label: '逐日累積結餘',
+              data: balanceData,
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              borderWidth: 2.5,
+              tension: 0.3,
+              fill: true,
+              pointRadius: 4,
+              pointBackgroundColor: '#2563eb'
+            },
+            {
+              label: '逐日累積收入',
+              data: incomeCumulativeData,
+              borderColor: '#10b981',
+              borderDash: [4, 4],
+              borderWidth: 2,
+              tension: 0.3,
+              fill: false,
+              pointRadius: 3,
+              pointBackgroundColor: '#10b981'
+            },
+            {
+              label: '逐日累積支出',
+              data: expenseCumulativeData,
+              borderColor: '#f43f5e',
+              borderDash: [4, 4],
+              borderWidth: 2,
+              tension: 0.3,
+              fill: false,
+              pointRadius: 3,
+              pointBackgroundColor: '#f43f5e'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                font: { family: "'Noto Sans TC', sans-serif", size: 12 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: $${ctx.raw}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false }
+            },
+            y: {
+              ticks: {
+                callback: (value) => '$' + value
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // --- Import / Export Handlers ---
+
+    // 1. Export Excel (.xlsx)
+    window.exportExcel = function() {
+      const exportData = window.appState.rows.map((r, i) => ({
+        '項次': i + 1,
+        '日期': r.date || '',
+        '項目': r.item || '',
+        '收入': Math.round(Number(r.income) || 0),
+        '支出': Math.round(Number(r.expense) || 0),
+        '累計結餘': Math.round(Number(r.balance) || 0),
+        '備註': r.note || ''
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, window.appState.sheetName || "收支表");
+
+      XLSX.writeFile(workbook, `${window.appState.headerTitle || "班費收支明細"}.xlsx`);
+    };
+
+    // 2. Import Excel (.xlsx / .csv)
+    window.importExcel = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+          if (jsonData.length > 0) {
+            const importedRows = jsonData.map((row, index) => {
+              const income = Math.round(Number(row['收入'] || row['Income'] || row['income'] || 0));
+              const expense = Math.round(Number(row['支出'] || row['Expense'] || row['expense'] || 0));
+              
+              return {
+                id: Date.now() + '-' + index,
+                date: row['日期'] || row['Date'] || row['date'] || '2026/10/25',
+                item: row['項目'] || row['Item'] || row['item'] || '匯入項目',
+                income: isNaN(income) ? 0 : income,
+                expense: isNaN(expense) ? 0 : expense,
+                note: row['備註'] || row['Notes'] || row['note'] || ''
+              };
+            });
+
+            window.appState.rows = importedRows;
+            saveDataToFirebase();
+            renderApp();
+          }
+        } catch (err) {
+          alert('解析 Excel 檔案失敗，請確認檔案格式正確。');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    };
+
+    // 3. Export PDF
+    window.exportPDF = function() {
+      const element = document.getElementById('pdfExportArea');
+      const opt = {
+        margin:       [0.5, 0.5, 0.5, 0.5],
+        filename:     `${window.appState.headerTitle}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    };
+
+    // 4. Export Chart PNG
+    window.exportChartPNG = function() {
+      const canvas = document.getElementById('financeChart');
+      const link = document.createElement('a');
+      link.download = `${window.appState.headerTitle}_分析圖表.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+
+  </script>
+</body>
+</html>
