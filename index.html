@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>班費收支紀錄系統 - 溫暖米白手帳風</title>
+  <title>收支管理系統 - 溫暖米白手帳風</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -63,7 +63,7 @@
         <div class="w-16 h-16 bg-amber-400 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-md shadow-amber-200">
           <i class="fa-solid fa-graduation-cap"></i>
         </div>
-        <h2 class="text-2xl font-black text-amber-950 tracking-tight" id="authTitle">班費收支紀錄系統</h2>
+        <h2 class="text-2xl font-black text-amber-950 tracking-tight" id="authTitle">收支管理系統</h2>
         <p class="text-sm font-medium text-stone-500 mt-1" id="authSubtitle">請輸入帳號密碼以進入專屬系統</p>
       </div>
 
@@ -130,8 +130,8 @@
 
         <div>
           <div class="flex items-center space-x-2">
-            <span class="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full border border-amber-200/80">學生手帳</span>
-            <span id="mainAppTitle" class="text-base font-extrabold text-amber-950">班費收支管理系統</span>
+            <span class="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full border border-amber-200/80">手帳管理</span>
+            <span id="mainAppTitle" class="text-base font-extrabold text-amber-950">收支管理系統</span>
           </div>
           <div class="flex items-center space-x-3 text-xs text-stone-400 mt-0.5 font-medium">
             <span id="connectionStatus" class="flex items-center gap-1.5 font-bold text-emerald-600">
@@ -172,7 +172,7 @@
   <div class="bg-[#FAF8F5]/80 sticky top-[108px] z-20 py-2.5 border-b border-amber-100/60 backdrop-blur-sm">
     <div class="w-full px-6 flex space-x-2">
       <button id="tabBtnDetails" onclick="switchTab('details')" class="py-2 px-5 rounded-full font-bold text-sm transition duration-150 bg-amber-500 text-white shadow-sm shadow-amber-200 flex items-center gap-2">
-        <i class="fa-solid fa-pen-to-square text-base"></i> 班費明細紀錄
+        <i class="fa-solid fa-pen-to-square text-base"></i> 收支明細紀錄
       </button>
       <button id="tabBtnAnalytics" onclick="switchTab('analytics')" class="py-2 px-5 rounded-full font-bold text-sm transition duration-150 text-stone-600 hover:bg-amber-100/50 flex items-center gap-2">
         <i class="fa-solid fa-chart-simple text-base"></i> 圖表分析
@@ -183,7 +183,7 @@
   <!-- Main Content Area -->
   <main class="flex-1 w-full px-6 py-6">
 
-    <!-- TAB 1: 班費收支明細 -->
+    <!-- TAB 1: 收支明細 -->
     <div id="tabDetailsView" class="w-full">
       
       <!-- Flex Layout: Left Table (Maximized), Right KPI Cards & Toolbar -->
@@ -196,7 +196,7 @@
           <div class="mb-6 text-center border-b border-amber-100/60 pb-4">
             <div class="flex items-center justify-center gap-2">
               <h1 id="headerTitle" title="雙擊可編輯標題" ondblclick="makeEditable(this, 'headerTitle')" class="text-2xl font-black text-amber-950 tracking-tight hover:bg-amber-50 px-4 py-1.5 rounded-xl inline-block cursor-pointer transition border border-transparent hover:border-amber-200">
-                三年五班第一學期班費收支明細表
+                三年五班第一學期收支明細表
               </h1>
             </div>
             <p class="text-xs font-semibold text-stone-400 mt-1.5 flex items-center justify-center gap-1">
@@ -363,7 +363,7 @@
 
   <!-- Global Footer -->
   <footer class="bg-[#FFFDF9]/60 border-t border-amber-100 py-4 text-center text-xs font-semibold text-stone-400 mt-auto">
-    班費收支紀錄系統 &copy; 2026. 資料即時同步至 Firebase Realtime Database.
+    收支管理系統 &copy; 2026. 資料即時同步至 Firebase Realtime Database.
   </footer>
 
   <!-- Firebase Web SDK Modular (v11.6.1) -->
@@ -415,7 +415,7 @@
         {
           id: 'sheet_1',
           name: '第一學期班費',
-          headerTitle: '三年五班第一學期班費收支明細表',
+          headerTitle: '三年五班第一學期收支明細表',
           rows: [
             { id: '1', date: '2026/10/01', item: '期初收取班費', income: 5000, expense: 0, note: '全班每人100元' },
             { id: '2', date: '2026/10/05', item: '購買班級掃具', income: 0, expense: 450, note: '掃把與拖把' },
@@ -433,8 +433,8 @@
       if (!window.appState.sheets || window.appState.sheets.length === 0) {
         window.appState.sheets = [{
           id: 'sheet_default',
-          name: '班費明細',
-          headerTitle: '班費收支明細表',
+          name: '收支明細',
+          headerTitle: '收支明細表',
           rows: []
         }];
         window.appState.activeSheetIndex = 0;
@@ -457,7 +457,7 @@
       window.appState.sheets.push({
         id: 'sheet_' + Date.now(),
         name: `工作表 ${newIndex}`,
-        headerTitle: `三年五班第 ${newIndex} 階段班費明細表`,
+        headerTitle: `三年五班第 ${newIndex} 階段收支明細表`,
         rows: []
       });
       window.appState.activeSheetIndex = window.appState.sheets.length - 1;
@@ -563,7 +563,7 @@
         nameGroup.classList.remove('hidden');
         nameInput.setAttribute('required', 'required');
       } else {
-        title.innerText = "班費收支紀錄系統";
+        title.innerText = "收支管理系統";
         subtitle.innerText = "請輸入帳號密碼以進入專屬系統";
         btn.innerText = "登入系統";
         toggleText.innerText = "尚未擁有帳號？";
@@ -672,8 +672,8 @@
           } else if (data.rows) {
             window.appState.sheets = [{
               id: 'sheet_1',
-              name: data.sheetName || '班費明細',
-              headerTitle: data.headerTitle || '班費收支明細表',
+              name: data.sheetName || '收支明細',
+              headerTitle: data.headerTitle || '收支明細表',
               rows: data.rows
             }];
           }
@@ -763,7 +763,7 @@
     // --- Core Rendering & UI Updates ---
     function renderApp() {
       const activeSheet = getActiveSheet();
-      document.getElementById('headerTitle').innerText = activeSheet.headerTitle || "班費收支明細表";
+      document.getElementById('headerTitle').innerText = activeSheet.headerTitle || "收支明細表";
       document.getElementById('currentSheetLabel').innerText = activeSheet.name;
       
       renderSheetTabs();
