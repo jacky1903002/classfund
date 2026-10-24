@@ -20,7 +20,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap');
     body {
       font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #F3F4F6;
+      background-color: #F8FAFC;
     }
     .drag-handle {
       cursor: grab;
@@ -33,27 +33,27 @@
       background-color: #E2E8F0;
     }
     .editable-cell:focus {
-      outline: 3px solid #2563EB;
+      outline: 2px solid #2563EB;
       background-color: #EFF6FF;
     }
-    /* 自訂商業捲軸 */
+    /* 商業精細捲軸 */
     ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
       background: #F1F5F9;
     }
     ::-webkit-scrollbar-thumb {
-      background: #94A3B8;
-      border-radius: 4px;
+      background: #CBD5E1;
+      border-radius: 3px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #64748B;
+      background: #94A3B8;
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
 
   <!-- Authentication Modal -->
   <div id="authModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -102,45 +102,43 @@
     </div>
   </div>
 
-  <!-- Main Application Header (商業高對比導覽列) -->
+  <!-- Main Application Header -->
   <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
-    <div class="w-full px-6 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="w-full px-5 py-2.5 flex flex-wrap items-center justify-between gap-4">
       
-      <!-- Logo (可雙擊貼上網址更換) & 工作表標題 -->
-      <div class="flex items-center space-x-4">
-        
-        <!-- 可雙擊更換 Logo 照片網址 -->
-        <div id="logoContainer" title="💡 雙擊可變更照片 URL 網址" ondblclick="changeLogoUrl()" class="cursor-pointer group relative w-12 h-12 bg-slate-800 rounded-xl overflow-hidden border border-slate-700 flex items-center justify-center shadow-inner hover:ring-2 hover:ring-blue-500 transition">
+      <!-- Logo & Sheet Name -->
+      <div class="flex items-center space-x-3">
+        <div id="logoContainer" title="💡 雙擊可變更照片 URL 網址" ondblclick="changeLogoUrl()" class="cursor-pointer group relative w-10 h-10 bg-slate-800 rounded-xl overflow-hidden border border-slate-700 flex items-center justify-center shadow-inner hover:ring-2 hover:ring-blue-500 transition">
           <img id="appLogoImg" src="" class="w-full h-full object-cover hidden" alt="Logo" onerror="onLogoError()" />
-          <div id="appLogoFallback" class="text-blue-400 text-2xl flex items-center justify-center">
+          <div id="appLogoFallback" class="text-blue-400 text-xl flex items-center justify-center">
             <i class="fa-solid fa-building-columns"></i>
           </div>
-          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[10px] text-white font-bold">
+          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[9px] text-white font-bold">
             雙擊換圖
           </div>
         </div>
 
         <div>
           <div class="flex items-center space-x-2">
-            <span class="text-[11px] font-black uppercase tracking-widest px-2 py-0.5 bg-slate-800 text-blue-400 rounded border border-slate-700">工作表</span>
-            <span id="sheetName" title="雙擊可編輯工作表名稱" ondblclick="makeEditable(this, 'sheetName')" class="text-xl font-black tracking-tight text-white hover:bg-slate-800 px-2 py-0.5 rounded cursor-pointer transition border border-transparent hover:border-slate-700">班費收支明細表</span>
+            <span class="text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 bg-slate-800 text-blue-400 rounded border border-slate-700">工作表</span>
+            <span id="sheetName" title="雙擊可編輯工作表名稱" ondblclick="makeEditable(this, 'sheetName')" class="text-base font-bold text-white hover:bg-slate-800 px-2 py-0.5 rounded cursor-pointer transition border border-transparent hover:border-slate-700">班費收支明細表</span>
           </div>
-          <div class="flex items-center space-x-4 text-xs text-slate-400 mt-1 font-medium">
+          <div class="flex items-center space-x-3 text-xs text-slate-400 mt-0.5 font-medium">
             <span id="connectionStatus" class="flex items-center gap-1.5 font-bold text-amber-400">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span> 連線中...
+              <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> 連線中...
             </span>
-            <span id="lastSavedStatus" class="hidden sm:inline text-slate-400">上次儲存時間：--</span>
+            <span id="lastSavedStatus" class="hidden sm:inline text-slate-400 text-[11px]">上次儲存：--</span>
           </div>
         </div>
       </div>
 
       <!-- User Info & Sign Out -->
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-3">
         <div class="hidden md:flex flex-col text-right">
-          <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">登入使用者</span>
+          <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">登入使用者</span>
           <span id="userEmailDisplay" class="text-xs font-bold text-white">--</span>
         </div>
-        <button onclick="handleSignOut()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3.5 py-2.5 rounded-xl transition border border-slate-700 flex items-center gap-2">
+        <button onclick="handleSignOut()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-lg transition border border-slate-700 flex items-center gap-1.5">
           <i class="fa-solid fa-right-from-bracket"></i>
           <span>登出</span>
         </button>
@@ -149,175 +147,178 @@
     </div>
   </header>
 
-  <!-- Navigation Tabs (滿版分頁導覽) -->
-  <div class="bg-white border-b border-slate-300 shadow-sm sticky top-[65px] z-20">
-    <div class="w-full px-6 flex space-x-4">
-      <button id="tabBtnDetails" onclick="switchTab('details')" class="py-4 px-6 border-b-4 font-black text-base transition duration-150 border-blue-600 text-blue-600 flex items-center gap-2.5">
-        <i class="fa-solid fa-table-list text-lg"></i> 班費收支明細
+  <!-- Navigation Tabs -->
+  <div class="bg-white border-b border-slate-200 shadow-sm sticky top-[57px] z-20">
+    <div class="w-full px-5 flex space-x-2">
+      <button id="tabBtnDetails" onclick="switchTab('details')" class="py-3 px-5 border-b-2 font-bold text-sm transition duration-150 border-blue-600 text-blue-600 flex items-center gap-2">
+        <i class="fa-solid fa-table-list text-base"></i> 班費收支明細
       </button>
-      <button id="tabBtnAnalytics" onclick="switchTab('analytics')" class="py-4 px-6 border-b-4 font-black text-base transition duration-150 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2.5">
-        <i class="fa-solid fa-chart-column text-lg"></i> 分析圖表
+      <button id="tabBtnAnalytics" onclick="switchTab('analytics')" class="py-3 px-5 border-b-2 font-bold text-sm transition duration-150 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2">
+        <i class="fa-solid fa-chart-column text-base"></i> 分析圖表
       </button>
     </div>
   </div>
 
-  <!-- Main Content Container (全滿版 100% 寬度) -->
-  <main class="flex-1 w-full px-6 py-6 space-y-6">
+  <!-- Main Content Area -->
+  <main class="flex-1 w-full px-5 py-5">
 
-    <!-- TAB 1: 班費收支明細 (滿版大字體) -->
-    <div id="tabDetailsView" class="space-y-6">
+    <!-- TAB 1: 班費收支明細 (最大化表格，右側放統計與按鈕) -->
+    <div id="tabDetailsView" class="w-full">
       
-      <!-- 統計卡片與功能按鈕列 (滿版寬度) -->
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+      <!-- Flex Layout: Left Side Main Table (Max Width), Right Side Compact Toolbar & Cards -->
+      <div class="flex flex-col lg:flex-row gap-5 items-start w-full">
         
-        <!-- Summary Cards (商業簡潔大氣風) -->
-        <div class="bg-white border border-slate-300 rounded-2xl p-5 flex items-center justify-between shadow-sm">
-          <div>
-            <p class="text-xs font-extrabold uppercase tracking-wider text-emerald-700">總收入 (TOTAL INCOME)</p>
-            <p class="text-3xl font-black text-emerald-600 mt-1 tracking-tight" id="statTotalIncome">$0</p>
+        <!-- Left: Main Editable Table (Maximum Width & Standard Size) -->
+        <div id="pdfExportArea" class="flex-1 w-full bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden p-6">
+          
+          <!-- Title Section -->
+          <div class="mb-5 text-center border-b border-slate-100 pb-4">
+            <h1 id="headerTitle" title="雙擊可編輯標題" ondblclick="makeEditable(this, 'headerTitle')" class="text-2xl font-black text-slate-900 tracking-tight hover:bg-slate-50 px-3 py-1 rounded-lg inline-block cursor-pointer transition border border-transparent hover:border-slate-200">
+              三年五班第一學期班費收支明細表
+            </h1>
+            <p class="text-xs font-semibold text-slate-400 mt-1">💡 雙擊表格即可直接編輯文字與金額 | 雙擊日期選擇日曆 | 拖曳左側圖示調整順序</p>
           </div>
-          <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-black">
-            <i class="fa-solid fa-arrow-down"></i>
+
+          <!-- Table Container -->
+          <div class="overflow-x-auto w-full">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="bg-slate-900 text-white uppercase text-xs font-bold tracking-wider border-b border-slate-800 select-none">
+                  <th class="py-3 px-3 w-10 text-center"></th>
+                  <th class="py-3 px-4 w-36 border-r border-slate-800">日期</th>
+                  <th class="py-3 px-4 border-r border-slate-800">項目</th>
+                  <th class="py-3 px-4 w-32 border-r border-slate-800 text-right">收入</th>
+                  <th class="py-3 px-4 w-32 border-r border-slate-800 text-right">支出</th>
+                  <th class="py-3 px-4 w-36 border-r border-slate-800 text-right">累計結餘</th>
+                  <th class="py-3 px-4 border-r border-slate-800">備註</th>
+                  <th class="py-3 px-3 w-14 text-center">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody" class="divide-y divide-slate-200">
+                <!-- Dynamically injected standard-sized rows -->
+              </tbody>
+            </table>
           </div>
+
         </div>
 
-        <div class="bg-white border border-slate-300 rounded-2xl p-5 flex items-center justify-between shadow-sm">
-          <div>
-            <p class="text-xs font-extrabold uppercase tracking-wider text-rose-700">總支出 (TOTAL EXPENSE)</p>
-            <p class="text-3xl font-black text-rose-600 mt-1 tracking-tight" id="statTotalExpense">$0</p>
+        <!-- Right Side: Compact Summary KPI Cards & Quick Action Buttons -->
+        <div class="w-full lg:w-80 flex flex-col gap-4 shrink-0">
+          
+          <!-- Quick Action Buttons -->
+          <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-2.5">
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-sliders text-blue-600"></i> 操作面板
+            </h3>
+            
+            <button onclick="addRow()" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2 shadow-sm">
+              <i class="fa-solid fa-plus text-sm"></i> 新增明細欄位
+            </button>
+
+            <div class="grid grid-cols-2 gap-2">
+              <label class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold py-2 px-2 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer text-center">
+                <i class="fa-solid fa-file-excel text-emerald-600"></i> 匯入 Excel
+                <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="importExcel(event)" />
+              </label>
+
+              <button onclick="exportExcel()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold py-2 px-2 rounded-lg transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出 Excel
+              </button>
+            </div>
+
+            <button onclick="exportPDF()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold py-2 px-2.5 rounded-lg transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-file-pdf text-rose-600"></i> 匯出 PDF 報表
+            </button>
           </div>
-          <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-xl font-black">
-            <i class="fa-solid fa-arrow-up"></i>
+
+          <!-- Summary KPI Cards -->
+          <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-pie text-emerald-600"></i> 財務總覽
+            </h3>
+
+            <!-- 總收入 -->
+            <div class="p-3 bg-emerald-50/60 border border-emerald-100 rounded-lg flex items-center justify-between">
+              <div>
+                <p class="text-[11px] font-bold uppercase text-emerald-800 tracking-wide">總收入 (INCOME)</p>
+                <p class="text-xl font-black text-emerald-600 mt-0.5 tracking-tight" id="statTotalIncome">$0</p>
+              </div>
+              <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-arrow-down"></i>
+              </div>
+            </div>
+
+            <!-- 總支出 -->
+            <div class="p-3 bg-rose-50/60 border border-rose-100 rounded-lg flex items-center justify-between">
+              <div>
+                <p class="text-[11px] font-bold uppercase text-rose-800 tracking-wide">總支出 (EXPENSE)</p>
+                <p class="text-xl font-black text-rose-600 mt-0.5 tracking-tight" id="statTotalExpense">$0</p>
+              </div>
+              <div class="w-8 h-8 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-arrow-up"></i>
+              </div>
+            </div>
+
+            <!-- 目前累積結餘 -->
+            <div class="p-3 bg-blue-50/60 border border-blue-100 rounded-lg flex items-center justify-between">
+              <div>
+                <p class="text-[11px] font-bold uppercase text-blue-800 tracking-wide">累積結餘 (BALANCE)</p>
+                <p class="text-xl font-black text-blue-700 mt-0.5 tracking-tight" id="statBalance">$0</p>
+              </div>
+              <div class="w-8 h-8 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center text-sm font-bold">
+                <i class="fa-solid fa-scale-balanced"></i>
+              </div>
+            </div>
+
           </div>
-        </div>
 
-        <div class="bg-white border border-slate-300 rounded-2xl p-5 flex items-center justify-between shadow-sm">
-          <div>
-            <p class="text-xs font-extrabold uppercase tracking-wider text-blue-800">目前累積結餘 (BALANCE)</p>
-            <p class="text-3xl font-black text-blue-700 mt-1 tracking-tight" id="statBalance">$0</p>
-          </div>
-          <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center text-xl font-black">
-            <i class="fa-solid fa-scale-balanced"></i>
-          </div>
-        </div>
-
-        <!-- Quick Action Toolbar -->
-        <div class="bg-white border border-slate-300 rounded-2xl p-3 flex flex-wrap items-center justify-center gap-2 shadow-sm">
-          <button onclick="addRow()" class="flex-1 min-w-[110px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-3 px-3 rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-blue-600/20">
-            <i class="fa-solid fa-plus text-base"></i> 新增明細
-          </button>
-
-          <label class="flex-1 min-w-[110px] bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold py-3 px-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-slate-900/10">
-            <i class="fa-solid fa-file-excel text-base text-emerald-400"></i> 匯入 Excel
-            <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="importExcel(event)" />
-          </label>
-
-          <button onclick="exportExcel()" class="flex-1 min-w-[110px] bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold py-3 px-3 rounded-xl transition border border-slate-300 flex items-center justify-center gap-2">
-            <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出 Excel
-          </button>
-
-          <button onclick="exportPDF()" class="flex-1 min-w-[110px] bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold py-3 px-3 rounded-xl transition border border-slate-300 flex items-center justify-center gap-2">
-            <i class="fa-solid fa-file-pdf text-rose-600"></i> 匯出 PDF
-          </button>
         </div>
 
       </div>
 
-      <!-- Table Container (滿版 + 放大 2 倍字體大器設計) -->
-      <div id="pdfExportArea" class="bg-white border border-slate-300 rounded-2xl shadow-sm overflow-hidden p-8 w-full">
-        
-        <!-- Main Editable Title -->
-        <div class="mb-8 text-center border-b border-slate-200 pb-6">
-          <h1 id="headerTitle" title="雙擊可編輯標題" ondblclick="makeEditable(this, 'headerTitle')" class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight hover:bg-slate-100 px-4 py-2 rounded-xl inline-block cursor-pointer transition border border-transparent hover:border-slate-300">
-            三年五班第一學期班費收支明細表
-          </h1>
-          <p class="text-sm font-semibold text-slate-400 mt-2">💡 雙擊表格內容即可編輯 | 雙擊日期欄位彈出日曆選單 | 拖曳左側圖示可調整順序</p>
-        </div>
-
-        <!-- Full-Width Large Table -->
-        <div class="overflow-x-auto w-full">
-          <table class="w-full text-left border-collapse text-xl font-semibold">
-            <thead>
-              <tr class="bg-slate-900 text-white uppercase text-base font-black tracking-wider border-b-2 border-slate-900 select-none">
-                <th class="py-5 px-4 w-14 text-center"></th>
-                <th class="py-5 px-6 w-56 border-r border-slate-800">日期</th>
-                <th class="py-5 px-6 border-r border-slate-800">項目</th>
-                <th class="py-5 px-6 w-48 border-r border-slate-800 text-right">收入</th>
-                <th class="py-5 px-6 w-48 border-r border-slate-800 text-right">支出</th>
-                <th class="py-5 px-6 w-56 border-r border-slate-800 text-right">累計結餘</th>
-                <th class="py-5 px-6 border-r border-slate-800">備註</th>
-                <th class="py-5 px-4 w-20 text-center">操作</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody" class="divide-y divide-slate-300">
-              <!-- Dynamically injected large text rows -->
-            </tbody>
-          </table>
-        </div>
-
-      </div>
     </div>
 
-    <!-- TAB 2: 分析圖表 (獨立分頁、滿版卡片與三張大圖表) -->
-    <div id="tabAnalyticsView" class="hidden space-y-8 w-full">
+    <!-- TAB 2: 分析圖表 (下拉選單選擇：逐日累積結餘, 逐日累積收入, 逐日累積支出) -->
+    <div id="tabAnalyticsView" class="hidden space-y-5 w-full">
       
-      <div class="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm flex flex-wrap items-center justify-between gap-4 w-full">
+      <!-- Top Chart Selector Toolbar -->
+      <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4 w-full">
         <div>
-          <h2 class="text-2xl font-black text-slate-900 flex items-center gap-3">
-            <i class="fa-solid fa-chart-line text-blue-600"></i> 財務數據趨勢與統計分析
+          <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-blue-600"></i> 財務數據趨勢視覺化分析
           </h2>
-          <p class="text-sm font-medium text-slate-500 mt-1">提供逐日累積結餘、累積收入與累積支出之三張獨立專業視覺化圖表</p>
+          <p class="text-xs font-semibold text-slate-400 mt-0.5">請使用右側下拉選單切換檢視指標圖表</p>
+        </div>
+
+        <!-- Dropdown & Export Button -->
+        <div class="flex items-center space-x-3">
+          <div class="relative">
+            <select id="chartTypeSelect" onchange="switchChartType(this.value)" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm font-bold rounded-lg px-3.5 py-2 pr-8 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition cursor-pointer appearance-none">
+              <option value="balance">逐日累積結餘</option>
+              <option value="income">逐日累積收入</option>
+              <option value="expense">逐日累積支出</option>
+            </select>
+            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+          </div>
+
+          <button onclick="exportCurrentChartPNG()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold px-3.5 py-2 rounded-lg border border-blue-200 transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-download"></i> 匯出 PNG 圖表
+          </button>
         </div>
       </div>
 
-      <!-- 三張獨立圖表 (滿版大視窗顯示) -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-
-        <!-- 圖表 1: 逐日累積結餘 -->
-        <div class="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm flex flex-col w-full">
-          <div class="flex items-center justify-between gap-2 mb-6 pb-4 border-b border-slate-200">
-            <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2.5">
-              <span class="w-4 h-4 rounded-full bg-blue-600 inline-block"></span> 逐日累積結餘
-            </h3>
-            <button onclick="exportSingleChartPNG('chartBalance', '逐日累積結餘圖表')" class="bg-slate-100 hover:bg-blue-50 text-blue-700 text-xs font-extrabold px-3.5 py-2 rounded-xl border border-slate-300 hover:border-blue-300 transition flex items-center gap-1.5">
-              <i class="fa-solid fa-download"></i> 匯出 PNG
-            </button>
-          </div>
-          <div class="relative w-full h-[400px]">
-            <canvas id="chartBalance"></canvas>
-          </div>
+      <!-- Single Full-Width Dynamic Chart Container -->
+      <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col w-full">
+        <div class="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+          <h3 id="currentChartTitle" class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <span id="chartIndicatorDot" class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span> 逐日累積結餘圖表
+          </h3>
         </div>
-
-        <!-- 圖表 2: 逐日累積收入 -->
-        <div class="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm flex flex-col w-full">
-          <div class="flex items-center justify-between gap-2 mb-6 pb-4 border-b border-slate-200">
-            <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2.5">
-              <span class="w-4 h-4 rounded-full bg-emerald-500 inline-block"></span> 逐日累積收入
-            </h3>
-            <button onclick="exportSingleChartPNG('chartIncome', '逐日累積收入圖表')" class="bg-slate-100 hover:bg-emerald-50 text-emerald-700 text-xs font-extrabold px-3.5 py-2 rounded-xl border border-slate-300 hover:border-emerald-300 transition flex items-center gap-1.5">
-              <i class="fa-solid fa-download"></i> 匯出 PNG
-            </button>
-          </div>
-          <div class="relative w-full h-[400px]">
-            <canvas id="chartIncome"></canvas>
-          </div>
+        
+        <!-- Full-Width Responsive Chart Box -->
+        <div class="relative w-full h-[520px]">
+          <canvas id="activeAnalyticsChart"></canvas>
         </div>
-
-        <!-- 圖表 3: 逐日累積支出 -->
-        <div class="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm flex flex-col w-full">
-          <div class="flex items-center justify-between gap-2 mb-6 pb-4 border-b border-slate-200">
-            <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2.5">
-              <span class="w-4 h-4 rounded-full bg-rose-500 inline-block"></span> 逐日累積支出
-            </h3>
-            <button onclick="exportSingleChartPNG('chartExpense', '逐日累積支出圖表')" class="bg-slate-100 hover:bg-rose-50 text-rose-700 text-xs font-extrabold px-3.5 py-2 rounded-xl border border-slate-300 hover:border-rose-300 transition flex items-center gap-1.5">
-              <i class="fa-solid fa-download"></i> 匯出 PNG
-            </button>
-          </div>
-          <div class="relative w-full h-[400px]">
-            <canvas id="chartExpense"></canvas>
-          </div>
-        </div>
-
       </div>
 
     </div>
@@ -325,7 +326,7 @@
   </main>
 
   <!-- Global Footer -->
-  <footer class="bg-white border-t border-slate-300 py-6 text-center text-xs font-bold text-slate-500 mt-auto">
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs font-semibold text-slate-400 mt-auto">
     班費收支紀錄系統 &copy; 2026. 資料即時同步至 Firebase Realtime Database.
   </footer>
 
@@ -366,6 +367,7 @@
     // Global App State
     window.appState = {
       activeTab: 'details',
+      selectedChartType: 'balance', // balance | income | expense
       user: null,
       isRegisterMode: false,
       logoUrl: "",
@@ -378,9 +380,7 @@
       ]
     };
 
-    let chartBalanceInstance = null;
-    let chartIncomeInstance = null;
-    let chartExpenseInstance = null;
+    let activeChartInstance = null;
     let dragSrcIndex = null;
 
     // --- Tab Switcher ---
@@ -392,13 +392,13 @@
       const viewAnalytics = document.getElementById('tabAnalyticsView');
 
       if (tabName === 'details') {
-        btnDetails.className = "py-4 px-6 border-b-4 font-black text-base transition duration-150 border-blue-600 text-blue-600 flex items-center gap-2.5";
-        btnAnalytics.className = "py-4 px-6 border-b-4 font-black text-base transition duration-150 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2.5";
+        btnDetails.className = "py-3 px-5 border-b-2 font-bold text-sm transition duration-150 border-blue-600 text-blue-600 flex items-center gap-2";
+        btnAnalytics.className = "py-3 px-5 border-b-2 font-bold text-sm transition duration-150 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2";
         viewDetails.classList.remove('hidden');
         viewAnalytics.classList.add('hidden');
       } else {
-        btnAnalytics.className = "py-4 px-6 border-b-4 font-black text-base transition duration-150 border-blue-600 text-blue-600 flex items-center gap-2.5";
-        btnDetails.className = "py-4 px-6 border-b-4 font-black text-base transition duration-150 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2.5";
+        btnAnalytics.className = "py-3 px-5 border-b-2 font-bold text-sm transition duration-150 border-blue-600 text-blue-600 flex items-center gap-2";
+        btnDetails.className = "py-3 px-5 border-b-2 font-bold text-sm transition duration-150 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2";
         viewAnalytics.classList.remove('hidden');
         viewDetails.classList.add('hidden');
         updateSummaryAndChart();
@@ -468,7 +468,7 @@
       signOut(auth);
     };
 
-    // Monitor Auth & Database Realtime Listener
+    // Monitor Auth State
     onAuthStateChanged(auth, (user) => {
       window.appState.user = user;
       const authModal = document.getElementById('authModal');
@@ -491,9 +491,9 @@
       const connStatus = document.getElementById('connectionStatus');
       onValue(connectedRef, (snap) => {
         if (snap.val() === true) {
-          connStatus.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> <span class="text-emerald-400 font-bold">已連線</span>`;
+          connStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> <span class="text-emerald-400 font-bold">已連線</span>`;
         } else {
-          connStatus.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> <span class="text-rose-400 font-bold">已斷線</span>`;
+          connStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span> <span class="text-rose-400 font-bold">已斷線</span>`;
         }
       });
     }
@@ -508,7 +508,7 @@
           if (data.logoUrl !== undefined) window.appState.logoUrl = data.logoUrl;
           if (Array.isArray(data.rows)) window.appState.rows = data.rows;
           if (data.lastSaved) {
-            document.getElementById('lastSavedStatus').innerText = `上次儲存時間：${data.lastSaved}`;
+            document.getElementById('lastSavedStatus').innerText = `上次儲存：${data.lastSaved}`;
           }
         }
         renderApp();
@@ -571,7 +571,7 @@
       const input = document.createElement('input');
       input.type = 'text';
       input.value = currentText;
-      input.className = 'bg-white text-slate-900 border-2 border-blue-600 rounded-lg px-2 py-1 outline-none text-xl font-black w-full max-w-md';
+      input.className = 'bg-white text-slate-900 border border-blue-600 rounded px-2 py-0.5 outline-none font-black text-xl w-full max-w-md';
 
       input.onblur = function() {
         const val = input.value.trim() || currentText;
@@ -612,7 +612,7 @@
         runningBal += (incomeNum - expenseNum);
 
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50/80 transition duration-150 group border-b border-slate-300';
+        tr.className = 'hover:bg-slate-50 transition duration-150 group border-b border-slate-200 text-sm font-medium';
         tr.draggable = true;
         tr.dataset.index = index;
 
@@ -622,30 +622,30 @@
         tr.addEventListener('dragend', handleDragEnd);
 
         tr.innerHTML = `
-          <td class="py-4 px-3 text-center text-slate-400 drag-handle">
-            <i class="fa-solid fa-grip-vertical text-lg hover:text-slate-800"></i>
+          <td class="py-2.5 px-3 text-center text-slate-400 drag-handle">
+            <i class="fa-solid fa-grip-vertical text-sm hover:text-slate-700"></i>
           </td>
-          <td class="py-4 px-6 border-r border-slate-200" ondblclick="openDatePicker(this, ${index})">
-            <span class="cursor-pointer hover:bg-slate-100 px-2 py-1 rounded-lg transition font-mono font-bold text-slate-900">${row.date || '點擊設定'}</span>
+          <td class="py-2.5 px-4 border-r border-slate-200" ondblclick="openDatePicker(this, ${index})">
+            <span class="cursor-pointer hover:bg-slate-100 px-1.5 py-0.5 rounded transition font-mono font-semibold text-slate-800">${row.date || '點擊設定'}</span>
           </td>
-          <td class="py-4 px-6 border-r border-slate-200">
-            <div class="editable-cell px-2 py-1 rounded-lg text-slate-900 outline-none font-bold" contenteditable="true" onblur="updateRowField(${index}, 'item', this.innerText)">${row.item || ''}</div>
+          <td class="py-2.5 px-4 border-r border-slate-200">
+            <div class="editable-cell px-1.5 py-0.5 rounded text-slate-900 outline-none font-medium" contenteditable="true" onblur="updateRowField(${index}, 'item', this.innerText)">${row.item || ''}</div>
           </td>
-          <td class="py-4 px-6 border-r border-slate-200 text-right">
-            <input type="text" class="w-full text-right bg-transparent outline-none editable-cell px-2 py-1 rounded-lg text-emerald-700 font-black font-mono" value="$${incomeNum.toLocaleString()}" onblur="updateNumberField(${index}, 'income', this.value)" />
+          <td class="py-2.5 px-4 border-r border-slate-200 text-right">
+            <input type="text" class="w-full text-right bg-transparent outline-none editable-cell px-1.5 py-0.5 rounded text-emerald-700 font-bold font-mono" value="$${incomeNum.toLocaleString()}" onblur="updateNumberField(${index}, 'income', this.value)" />
           </td>
-          <td class="py-4 px-6 border-r border-slate-200 text-right">
-            <input type="text" class="w-full text-right bg-transparent outline-none editable-cell px-2 py-1 rounded-lg text-rose-700 font-black font-mono" value="$${expenseNum.toLocaleString()}" onblur="updateNumberField(${index}, 'expense', this.value)" />
+          <td class="py-2.5 px-4 border-r border-slate-200 text-right">
+            <input type="text" class="w-full text-right bg-transparent outline-none editable-cell px-1.5 py-0.5 rounded text-rose-700 font-bold font-mono" value="$${expenseNum.toLocaleString()}" onblur="updateNumberField(${index}, 'expense', this.value)" />
           </td>
-          <td class="py-4 px-6 border-r border-slate-200 text-right font-black font-mono text-slate-900 bg-slate-50/50">
+          <td class="py-2.5 px-4 border-r border-slate-200 text-right font-bold font-mono text-slate-900 bg-slate-50/50">
             $${runningBal.toLocaleString()}
           </td>
-          <td class="py-4 px-6 border-r border-slate-200">
-            <div class="editable-cell px-2 py-1 rounded-lg text-slate-700 outline-none font-medium" contenteditable="true" onblur="updateRowField(${index}, 'note', this.innerText)">${row.note || ''}</div>
+          <td class="py-2.5 px-4 border-r border-slate-200">
+            <div class="editable-cell px-1.5 py-0.5 rounded text-slate-600 outline-none text-xs font-normal" contenteditable="true" onblur="updateRowField(${index}, 'note', this.innerText)">${row.note || ''}</div>
           </td>
-          <td class="py-4 px-3 text-center">
-            <button onclick="deleteRow(${index})" class="text-slate-400 hover:text-rose-600 transition p-2 rounded-lg hover:bg-rose-50" title="刪除此列">
-              <i class="fa-solid fa-trash-can text-lg"></i>
+          <td class="py-2.5 px-3 text-center">
+            <button onclick="deleteRow(${index})" class="text-slate-400 hover:text-rose-600 transition p-1 rounded hover:bg-rose-50" title="刪除此列">
+              <i class="fa-solid fa-trash-can text-sm"></i>
             </button>
           </td>
         `;
@@ -658,7 +658,7 @@
       const currentVal = window.appState.rows[index].date || '';
       const input = document.createElement('input');
       input.type = 'date';
-      input.className = 'bg-white border-2 border-blue-600 rounded-lg px-2 py-1 text-base font-bold text-slate-900 outline-none font-mono';
+      input.className = 'bg-white border border-blue-600 rounded px-1.5 py-0.5 text-xs font-bold text-slate-900 outline-none font-mono';
 
       if (currentVal) {
         input.value = currentVal.replace(/\//g, '-');
@@ -751,7 +751,12 @@
       dragSrcIndex = null;
     }
 
-    // --- Analytics Summary & 3 Separate Full-Width Chart Visualizers ---
+    // --- Analytics Chart Switcher & Full-Width Single Chart Render ---
+    window.switchChartType = function(type) {
+      window.appState.selectedChartType = type;
+      updateSummaryAndChart();
+    };
+
     function updateSummaryAndChart() {
       let totalIncome = 0;
       let totalExpense = 0;
@@ -782,117 +787,125 @@
         expenseCumulativeData.push(cumExpense);
       });
 
-      // Update Summary Cards
+      // Update Summary KPI Cards
       document.getElementById('statTotalIncome').innerText = `$${totalIncome.toLocaleString()}`;
       document.getElementById('statTotalExpense').innerText = `$${totalExpense.toLocaleString()}`;
       document.getElementById('statBalance').innerText = `$${(totalIncome - totalExpense).toLocaleString()}`;
 
-      const commonOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            titleFont: { size: 14, weight: 'bold' },
-            bodyFont: { size: 14, weight: 'bold' },
-            callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: $${ctx.raw.toLocaleString()}`
-            }
-          }
-        },
-        scales: {
-          x: { 
-            grid: { display: false },
-            ticks: { font: { size: 12, weight: 'bold' } }
-          },
-          y: { 
-            ticks: { 
-              font: { size: 12, weight: 'bold' },
-              callback: (val) => '$' + val.toLocaleString() 
-            } 
-          }
-        }
+      // Render Single Selected Full-Width Chart
+      const chartType = window.appState.selectedChartType;
+      const ctx = document.getElementById('activeAnalyticsChart')?.getContext('2d');
+      const chartTitleEl = document.getElementById('currentChartTitle');
+      const dotEl = document.getElementById('chartIndicatorDot');
+
+      if (!ctx) return;
+
+      if (activeChartInstance) {
+        activeChartInstance.destroy();
+      }
+
+      let chartConfig = {
+        label: '',
+        data: [],
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.12)',
+        titleText: '逐日累積結餘圖表',
+        dotClass: 'w-3 h-3 rounded-full bg-blue-600 inline-block'
       };
 
-      // 1. Chart - Balance
-      const ctxBal = document.getElementById('chartBalance')?.getContext('2d');
-      if (ctxBal) {
-        if (chartBalanceInstance) chartBalanceInstance.destroy();
-        chartBalanceInstance = new Chart(ctxBal, {
-          type: 'line',
-          data: {
-            labels: chartLabels,
-            datasets: [{
-              label: '累積結餘',
-              data: balanceData,
-              borderColor: '#2563eb',
-              backgroundColor: 'rgba(37, 99, 235, 0.12)',
-              borderWidth: 3,
-              tension: 0.25,
-              fill: true,
-              pointRadius: 5,
-              pointBackgroundColor: '#2563eb'
-            }]
-          },
-          options: commonOptions
-        });
+      if (chartType === 'income') {
+        chartConfig = {
+          label: '累積收入',
+          data: incomeCumulativeData,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.12)',
+          titleText: '逐日累積收入圖表',
+          dotClass: 'w-3 h-3 rounded-full bg-emerald-500 inline-block'
+        };
+      } else if (chartType === 'expense') {
+        chartConfig = {
+          label: '累積支出',
+          data: expenseCumulativeData,
+          borderColor: '#f43f5e',
+          backgroundColor: 'rgba(244, 63, 94, 0.12)',
+          titleText: '逐日累積支出圖表',
+          dotClass: 'w-3 h-3 rounded-full bg-rose-500 inline-block'
+        };
+      } else {
+        chartConfig = {
+          label: '累積結餘',
+          data: balanceData,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.12)',
+          titleText: '逐日累積結餘圖表',
+          dotClass: 'w-3 h-3 rounded-full bg-blue-600 inline-block'
+        };
       }
 
-      // 2. Chart - Income
-      const ctxInc = document.getElementById('chartIncome')?.getContext('2d');
-      if (ctxInc) {
-        if (chartIncomeInstance) chartIncomeInstance.destroy();
-        chartIncomeInstance = new Chart(ctxInc, {
-          type: 'line',
-          data: {
-            labels: chartLabels,
-            datasets: [{
-              label: '累積收入',
-              data: incomeCumulativeData,
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.12)',
-              borderWidth: 3,
-              tension: 0.25,
-              fill: true,
-              pointRadius: 5,
-              pointBackgroundColor: '#10b981'
-            }]
-          },
-          options: commonOptions
-        });
+      if (chartTitleEl) {
+        chartTitleEl.innerHTML = `<span class="${chartConfig.dotClass}"></span> ${chartConfig.titleText}`;
       }
 
-      // 3. Chart - Expense
-      const ctxExp = document.getElementById('chartExpense')?.getContext('2d');
-      if (ctxExp) {
-        if (chartExpenseInstance) chartExpenseInstance.destroy();
-        chartExpenseInstance = new Chart(ctxExp, {
-          type: 'line',
-          data: {
-            labels: chartLabels,
-            datasets: [{
-              label: '累積支出',
-              data: expenseCumulativeData,
-              borderColor: '#f43f5e',
-              backgroundColor: 'rgba(244, 63, 94, 0.12)',
-              borderWidth: 3,
-              tension: 0.25,
-              fill: true,
-              pointRadius: 5,
-              pointBackgroundColor: '#f43f5e'
-            }]
+      activeChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            label: chartConfig.label,
+            data: chartConfig.data,
+            borderColor: chartConfig.borderColor,
+            backgroundColor: chartConfig.backgroundColor,
+            borderWidth: 3,
+            tension: 0.25,
+            fill: true,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            pointBackgroundColor: chartConfig.borderColor
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              titleFont: { size: 13, weight: 'bold' },
+              bodyFont: { size: 13, weight: 'bold' },
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: $${ctx.raw.toLocaleString()}`
+              }
+            }
           },
-          options: commonOptions
-        });
-      }
+          scales: {
+            x: { 
+              grid: { color: '#F1F5F9' },
+              ticks: { font: { size: 12, weight: 'bold' }, color: '#64748B' }
+            },
+            y: { 
+              grid: { color: '#F1F5F9' },
+              ticks: { 
+                font: { size: 12, weight: 'bold' },
+                color: '#64748B',
+                callback: (val) => '$' + val.toLocaleString() 
+              } 
+            }
+          }
+        }
+      });
     }
 
-    // --- Export Single Chart PNG ---
-    window.exportSingleChartPNG = function(canvasId, title) {
-      const canvas = document.getElementById(canvasId);
+    // --- Export Single Active Chart PNG ---
+    window.exportCurrentChartPNG = function() {
+      const canvas = document.getElementById('activeAnalyticsChart');
       if (!canvas) return;
+      const typeNames = {
+        balance: '逐日累積結餘',
+        income: '逐日累積收入',
+        expense: '逐日累積支出'
+      };
+      const name = typeNames[window.appState.selectedChartType] || '財務圖表';
       const link = document.createElement('a');
-      link.download = `${window.appState.headerTitle}_${title}.png`;
+      link.download = `${window.appState.headerTitle}_${name}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     };
