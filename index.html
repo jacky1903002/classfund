@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>班費收支紀錄系統</title>
+  <title>班費收支紀錄系統 - 企業商業版</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,9 +17,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap');
     body {
-      font-family: 'Noto Sans TC', sans-serif;
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #F3F4F6;
     }
     .drag-handle {
       cursor: grab;
@@ -28,94 +29,118 @@
       cursor: grabbing;
     }
     tr.dragging {
-      opacity: 0.5;
-      background-color: #f3f4f6;
+      opacity: 0.4;
+      background-color: #E2E8F0;
     }
     .editable-cell:focus {
-      outline: 2px solid #3b82f6;
-      background-color: #eff6ff;
+      outline: 3px solid #2563EB;
+      background-color: #EFF6FF;
+    }
+    /* 自訂商業捲軸 */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94A3B8;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748B;
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased">
 
   <!-- Authentication Modal -->
-  <div id="authModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-100">
+  <div id="authModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
       <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
-          <i class="fa-solid font-bold fa-wallet"></i>
+        <div class="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg">
+          <i class="fa-solid fa-building-columns"></i>
         </div>
-        <h2 class="text-2xl font-bold text-slate-800" id="authTitle">班費收支紀錄系統</h2>
-        <p class="text-sm text-slate-500 mt-1">請先登入電子郵件帳號密碼以繼續</p>
+        <h2 class="text-2xl font-black text-slate-900 tracking-tight" id="authTitle">班費收支紀錄系統</h2>
+        <p class="text-sm font-medium text-slate-500 mt-1">請輸入帳號密碼以進入系統</p>
       </div>
 
-      <form id="authForm" class="space-y-4" onsubmit="handleAuthSubmit(event)">
+      <form id="authForm" class="space-y-5" onsubmit="handleAuthSubmit(event)">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">電子郵件 (Email)</label>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">電子郵件 (Email)</label>
           <div class="relative">
-            <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="email" id="authEmail" required class="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="name@example.com" />
+            <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="email" id="authEmail" required class="w-full pl-10 pr-4 py-3 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition font-medium" placeholder="name@company.com" />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">密碼 (Password)</label>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">密碼 (Password)</label>
           <div class="relative">
-            <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="password" id="authPassword" required minlength="6" class="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="••••••••" />
+            <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="password" id="authPassword" required minlength="6" class="w-full pl-10 pr-4 py-3 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition font-medium" placeholder="••••••••" />
           </div>
         </div>
 
-        <div id="authError" class="hidden text-xs text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 flex items-center gap-2">
-          <i class="fa-solid fa-circle-exclamation"></i>
+        <div id="authError" class="hidden text-xs font-semibold text-red-600 bg-red-50 p-3.5 rounded-xl border border-red-200 flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation"></i>
           <span id="authErrorMsg"></span>
         </div>
 
-        <button type="submit" id="authBtn" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition duration-150">
+        <button type="submit" id="authBtn" class="w-full bg-slate-900 hover:bg-slate-800 active:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg transition duration-150 tracking-wide text-sm">
           登入系統
         </button>
       </form>
 
-      <div class="mt-6 text-center text-sm text-slate-500">
+      <div class="mt-6 text-center text-sm font-medium text-slate-500">
         <span id="authToggleText">尚未擁有帳號？</span>
-        <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" class="text-blue-600 font-semibold hover:underline ml-1">
+        <button type="button" onclick="toggleAuthMode()" id="authToggleBtn" class="text-blue-600 font-bold hover:underline ml-1">
           立即註冊
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Main Application Header -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+  <!-- Main Application Header (商業高對比導覽列) -->
+  <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+    <div class="w-full px-6 py-3 flex flex-wrap items-center justify-between gap-4">
       
-      <!-- Brand & Editable Sheet Name -->
-      <div class="flex items-center space-x-3">
-        <div class="bg-blue-600 text-white p-2 rounded-xl shadow-md">
-          <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
+      <!-- Logo (可雙擊貼上網址更換) & 工作表標題 -->
+      <div class="flex items-center space-x-4">
+        
+        <!-- 可雙擊更換 Logo 照片網址 -->
+        <div id="logoContainer" title="💡 雙擊可變更照片 URL 網址" ondblclick="changeLogoUrl()" class="cursor-pointer group relative w-12 h-12 bg-slate-800 rounded-xl overflow-hidden border border-slate-700 flex items-center justify-center shadow-inner hover:ring-2 hover:ring-blue-500 transition">
+          <img id="appLogoImg" src="" class="w-full h-full object-cover hidden" alt="Logo" onerror="onLogoError()" />
+          <div id="appLogoFallback" class="text-blue-400 text-2xl flex items-center justify-center">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[10px] text-white font-bold">
+            雙擊換圖
+          </div>
         </div>
+
         <div>
           <div class="flex items-center space-x-2">
-            <span class="text-xs font-semibold px-2 py-0.5 bg-blue-50 text-blue-700 rounded border border-blue-200">工作表</span>
-            <span id="sheetName" title="雙擊可編輯工作表名稱" ondblclick="makeEditable(this, 'sheetName')" class="text-lg font-bold text-slate-800 hover:bg-slate-100 px-1.5 py-0.5 rounded cursor-pointer transition border border-transparent hover:border-slate-300">班費收支明細表</span>
+            <span class="text-[11px] font-black uppercase tracking-widest px-2 py-0.5 bg-slate-800 text-blue-400 rounded border border-slate-700">工作表</span>
+            <span id="sheetName" title="雙擊可編輯工作表名稱" ondblclick="makeEditable(this, 'sheetName')" class="text-xl font-black tracking-tight text-white hover:bg-slate-800 px-2 py-0.5 rounded cursor-pointer transition border border-transparent hover:border-slate-700">班費收支明細表</span>
           </div>
-          <div class="flex items-center space-x-4 text-xs text-slate-500 mt-0.5">
-            <span id="connectionStatus" class="flex items-center gap-1.5 font-medium text-amber-600">
-              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> 連線中...
+          <div class="flex items-center space-x-4 text-xs text-slate-400 mt-1 font-medium">
+            <span id="connectionStatus" class="flex items-center gap-1.5 font-bold text-amber-400">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span> 連線中...
             </span>
-            <span id="lastSavedStatus" class="hidden sm:inline">上次儲存時間：--</span>
+            <span id="lastSavedStatus" class="hidden sm:inline text-slate-400">上次儲存時間：--</span>
           </div>
         </div>
       </div>
 
       <!-- User Info & Sign Out -->
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-4">
         <div class="hidden md:flex flex-col text-right">
-          <span class="text-xs text-slate-400">登入使用者</span>
-          <span id="userEmailDisplay" class="text-xs font-semibold text-slate-700">--</span>
+          <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">登入使用者</span>
+          <span id="userEmailDisplay" class="text-xs font-bold text-white">--</span>
         </div>
-        <button onclick="handleSignOut()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+        <button onclick="handleSignOut()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3.5 py-2.5 rounded-xl transition border border-slate-700 flex items-center gap-2">
           <i class="fa-solid fa-right-from-bracket"></i>
           <span>登出</span>
         </button>
@@ -124,122 +149,183 @@
     </div>
   </header>
 
-  <!-- Main Content Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  <!-- Navigation Tabs (滿版分頁導覽) -->
+  <div class="bg-white border-b border-slate-300 shadow-sm sticky top-[65px] z-20">
+    <div class="w-full px-6 flex space-x-4">
+      <button id="tabBtnDetails" onclick="switchTab('details')" class="py-4 px-6 border-b-4 font-black text-base transition duration-150 border-blue-600 text-blue-600 flex items-center gap-2.5">
+        <i class="fa-solid fa-table-list text-lg"></i> 班費收支明細
+      </button>
+      <button id="tabBtnAnalytics" onclick="switchTab('analytics')" class="py-4 px-6 border-b-4 font-black text-base transition duration-150 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2.5">
+        <i class="fa-solid fa-chart-column text-lg"></i> 分析圖表
+      </button>
+    </div>
+  </div>
 
-    <!-- Action Toolbar & Summary Cards -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+  <!-- Main Content Container (全滿版 100% 寬度) -->
+  <main class="flex-1 w-full px-6 py-6 space-y-6">
+
+    <!-- TAB 1: 班費收支明細 (滿版大字體) -->
+    <div id="tabDetailsView" class="space-y-6">
       
-      <!-- Summary Cards -->
-      <div class="bg-emerald-50 border border-emerald-200/60 rounded-2xl p-4 flex items-center space-x-4 shadow-sm">
-        <div class="bg-emerald-500 text-white p-3 rounded-xl shadow-md">
-          <i class="fa-solid fa-arrow-down text-lg"></i>
+      <!-- 統計卡片與功能按鈕列 (滿版寬度) -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+        
+        <!-- Summary Cards (商業簡潔大氣風) -->
+        <div class="bg-white border border-slate-300 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-wider text-emerald-700">總收入 (TOTAL INCOME)</p>
+            <p class="text-3xl font-black text-emerald-600 mt-1 tracking-tight" id="statTotalIncome">$0</p>
+          </div>
+          <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-black">
+            <i class="fa-solid fa-arrow-down"></i>
+          </div>
         </div>
-        <div>
-          <p class="text-xs text-emerald-700 font-semibold">總收入</p>
-          <p class="text-2xl font-bold text-emerald-900" id="statTotalIncome">$0</p>
+
+        <div class="bg-white border border-slate-300 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-wider text-rose-700">總支出 (TOTAL EXPENSE)</p>
+            <p class="text-3xl font-black text-rose-600 mt-1 tracking-tight" id="statTotalExpense">$0</p>
+          </div>
+          <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-xl font-black">
+            <i class="fa-solid fa-arrow-up"></i>
+          </div>
         </div>
+
+        <div class="bg-white border border-slate-300 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+          <div>
+            <p class="text-xs font-extrabold uppercase tracking-wider text-blue-800">目前累積結餘 (BALANCE)</p>
+            <p class="text-3xl font-black text-blue-700 mt-1 tracking-tight" id="statBalance">$0</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center text-xl font-black">
+            <i class="fa-solid fa-scale-balanced"></i>
+          </div>
+        </div>
+
+        <!-- Quick Action Toolbar -->
+        <div class="bg-white border border-slate-300 rounded-2xl p-3 flex flex-wrap items-center justify-center gap-2 shadow-sm">
+          <button onclick="addRow()" class="flex-1 min-w-[110px] bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-3 px-3 rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-blue-600/20">
+            <i class="fa-solid fa-plus text-base"></i> 新增明細
+          </button>
+
+          <label class="flex-1 min-w-[110px] bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold py-3 px-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-slate-900/10">
+            <i class="fa-solid fa-file-excel text-base text-emerald-400"></i> 匯入 Excel
+            <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="importExcel(event)" />
+          </label>
+
+          <button onclick="exportExcel()" class="flex-1 min-w-[110px] bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold py-3 px-3 rounded-xl transition border border-slate-300 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-file-export text-emerald-600"></i> 匯出 Excel
+          </button>
+
+          <button onclick="exportPDF()" class="flex-1 min-w-[110px] bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold py-3 px-3 rounded-xl transition border border-slate-300 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-file-pdf text-rose-600"></i> 匯出 PDF
+          </button>
+        </div>
+
       </div>
 
-      <div class="bg-rose-50 border border-rose-200/60 rounded-2xl p-4 flex items-center space-x-4 shadow-sm">
-        <div class="bg-rose-500 text-white p-3 rounded-xl shadow-md">
-          <i class="fa-solid fa-arrow-up text-lg"></i>
+      <!-- Table Container (滿版 + 放大 2 倍字體大器設計) -->
+      <div id="pdfExportArea" class="bg-white border border-slate-300 rounded-2xl shadow-sm overflow-hidden p-8 w-full">
+        
+        <!-- Main Editable Title -->
+        <div class="mb-8 text-center border-b border-slate-200 pb-6">
+          <h1 id="headerTitle" title="雙擊可編輯標題" ondblclick="makeEditable(this, 'headerTitle')" class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight hover:bg-slate-100 px-4 py-2 rounded-xl inline-block cursor-pointer transition border border-transparent hover:border-slate-300">
+            三年五班第一學期班費收支明細表
+          </h1>
+          <p class="text-sm font-semibold text-slate-400 mt-2">💡 雙擊表格內容即可編輯 | 雙擊日期欄位彈出日曆選單 | 拖曳左側圖示可調整順序</p>
         </div>
-        <div>
-          <p class="text-xs text-rose-700 font-semibold">總支出</p>
-          <p class="text-2xl font-bold text-rose-900" id="statTotalExpense">$0</p>
+
+        <!-- Full-Width Large Table -->
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse text-xl font-semibold">
+            <thead>
+              <tr class="bg-slate-900 text-white uppercase text-base font-black tracking-wider border-b-2 border-slate-900 select-none">
+                <th class="py-5 px-4 w-14 text-center"></th>
+                <th class="py-5 px-6 w-56 border-r border-slate-800">日期</th>
+                <th class="py-5 px-6 border-r border-slate-800">項目</th>
+                <th class="py-5 px-6 w-48 border-r border-slate-800 text-right">收入</th>
+                <th class="py-5 px-6 w-48 border-r border-slate-800 text-right">支出</th>
+                <th class="py-5 px-6 w-56 border-r border-slate-800 text-right">累計結餘</th>
+                <th class="py-5 px-6 border-r border-slate-800">備註</th>
+                <th class="py-5 px-4 w-20 text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-slate-300">
+              <!-- Dynamically injected large text rows -->
+            </tbody>
+          </table>
         </div>
+
       </div>
-
-      <div class="bg-blue-50 border border-blue-200/60 rounded-2xl p-4 flex items-center space-x-4 shadow-sm">
-        <div class="bg-blue-600 text-white p-3 rounded-xl shadow-md">
-          <i class="fa-solid fa-scale-balanced text-lg"></i>
-        </div>
-        <div>
-          <p class="text-xs text-blue-700 font-semibold">目前累積結餘</p>
-          <p class="text-2xl font-bold text-blue-900" id="statBalance">$0</p>
-        </div>
-      </div>
-
-      <!-- Quick Action Toolbar -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-3 flex flex-wrap items-center justify-around gap-2 shadow-sm">
-        <button onclick="addRow()" class="flex-1 min-w-[100px] bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/10">
-          <i class="fa-solid fa-plus"></i> 新增明細
-        </button>
-
-        <label class="flex-1 min-w-[100px] bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-500/10">
-          <i class="fa-solid fa-file-excel"></i> 匯入 Excel
-          <input type="file" id="excelInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="importExcel(event)" />
-        </label>
-
-        <button onclick="exportExcel()" class="flex-1 min-w-[100px] bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-file-export"></i> 匯出 Excel
-        </button>
-
-        <button onclick="exportPDF()" class="flex-1 min-w-[100px] bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-file-pdf"></i> 匯出 PDF
-        </button>
-      </div>
-
     </div>
 
-    <!-- Table Container -->
-    <div id="pdfExportArea" class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden p-6">
+    <!-- TAB 2: 分析圖表 (獨立分頁、滿版卡片與三張大圖表) -->
+    <div id="tabAnalyticsView" class="hidden space-y-8 w-full">
       
-      <!-- Editable Title Banner -->
-      <div class="mb-6 text-center border-b border-slate-100 pb-4">
-        <h1 id="headerTitle" title="雙擊可編輯標題" ondblclick="makeEditable(this, 'headerTitle')" class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight hover:bg-slate-100 px-3 py-1 rounded inline-block cursor-pointer transition border border-transparent hover:border-slate-300">
-          三年五班第一學期班費收支明細表
-        </h1>
-        <p class="text-xs text-slate-400 mt-1">💡 雙擊表格內容即可直接編輯 | 雙擊日期欄位彈出日曆</p>
-      </div>
-
-      <!-- Main Data Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="bg-slate-100 text-slate-700 uppercase text-xs font-bold border-y border-slate-200 select-none">
-              <th class="py-3.5 px-3 w-10 text-center"></th>
-              <th class="py-3.5 px-4 w-36 border-r border-slate-200">日期</th>
-              <th class="py-3.5 px-4 border-r border-slate-200">項目</th>
-              <th class="py-3.5 px-4 w-32 border-r border-slate-200 text-right">收入</th>
-              <th class="py-3.5 px-4 w-32 border-r border-slate-200 text-right">支出</th>
-              <th class="py-3.5 px-4 w-36 border-r border-slate-200 text-right">累計結餘</th>
-              <th class="py-3.5 px-4 border-r border-slate-200">備註</th>
-              <th class="py-3.5 px-3 w-12 text-center">操作</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody" class="divide-y divide-slate-200 font-medium">
-            <!-- Rows injected dynamically via JS -->
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-
-    <!-- Analytics Section -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-slate-100">
+      <div class="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm flex flex-wrap items-center justify-between gap-4 w-full">
         <div>
-          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-chart-line text-blue-600"></i> 分析圖表
+          <h2 class="text-2xl font-black text-slate-900 flex items-center gap-3">
+            <i class="fa-solid fa-chart-line text-blue-600"></i> 財務數據趨勢與統計分析
           </h2>
-          <p class="text-xs text-slate-400">顯示逐日累積結餘、累積收入與累積支出變化</p>
+          <p class="text-sm font-medium text-slate-500 mt-1">提供逐日累積結餘、累積收入與累積支出之三張獨立專業視覺化圖表</p>
         </div>
-        <button onclick="exportChartPNG()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-md">
-          <i class="fa-solid fa-download"></i> 匯出圖表 PNG
-        </button>
       </div>
 
-      <div class="relative w-full h-[360px]">
-        <canvas id="financeChart"></canvas>
+      <!-- 三張獨立圖表 (滿版大視窗顯示) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+
+        <!-- 圖表 1: 逐日累積結餘 -->
+        <div class="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm flex flex-col w-full">
+          <div class="flex items-center justify-between gap-2 mb-6 pb-4 border-b border-slate-200">
+            <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2.5">
+              <span class="w-4 h-4 rounded-full bg-blue-600 inline-block"></span> 逐日累積結餘
+            </h3>
+            <button onclick="exportSingleChartPNG('chartBalance', '逐日累積結餘圖表')" class="bg-slate-100 hover:bg-blue-50 text-blue-700 text-xs font-extrabold px-3.5 py-2 rounded-xl border border-slate-300 hover:border-blue-300 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-download"></i> 匯出 PNG
+            </button>
+          </div>
+          <div class="relative w-full h-[400px]">
+            <canvas id="chartBalance"></canvas>
+          </div>
+        </div>
+
+        <!-- 圖表 2: 逐日累積收入 -->
+        <div class="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm flex flex-col w-full">
+          <div class="flex items-center justify-between gap-2 mb-6 pb-4 border-b border-slate-200">
+            <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2.5">
+              <span class="w-4 h-4 rounded-full bg-emerald-500 inline-block"></span> 逐日累積收入
+            </h3>
+            <button onclick="exportSingleChartPNG('chartIncome', '逐日累積收入圖表')" class="bg-slate-100 hover:bg-emerald-50 text-emerald-700 text-xs font-extrabold px-3.5 py-2 rounded-xl border border-slate-300 hover:border-emerald-300 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-download"></i> 匯出 PNG
+            </button>
+          </div>
+          <div class="relative w-full h-[400px]">
+            <canvas id="chartIncome"></canvas>
+          </div>
+        </div>
+
+        <!-- 圖表 3: 逐日累積支出 -->
+        <div class="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm flex flex-col w-full">
+          <div class="flex items-center justify-between gap-2 mb-6 pb-4 border-b border-slate-200">
+            <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2.5">
+              <span class="w-4 h-4 rounded-full bg-rose-500 inline-block"></span> 逐日累積支出
+            </h3>
+            <button onclick="exportSingleChartPNG('chartExpense', '逐日累積支出圖表')" class="bg-slate-100 hover:bg-rose-50 text-rose-700 text-xs font-extrabold px-3.5 py-2 rounded-xl border border-slate-300 hover:border-rose-300 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-download"></i> 匯出 PNG
+            </button>
+          </div>
+          <div class="relative w-full h-[400px]">
+            <canvas id="chartExpense"></canvas>
+          </div>
+        </div>
+
       </div>
+
     </div>
 
   </main>
 
   <!-- Global Footer -->
-  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 mt-auto">
+  <footer class="bg-white border-t border-slate-300 py-6 text-center text-xs font-bold text-slate-500 mt-auto">
     班費收支紀錄系統 &copy; 2026. 資料即時同步至 Firebase Realtime Database.
   </footer>
 
@@ -279,8 +365,10 @@
 
     // Global App State
     window.appState = {
+      activeTab: 'details',
       user: null,
       isRegisterMode: false,
+      logoUrl: "",
       sheetName: "班費收支明細表",
       headerTitle: "三年五班第一學期班費收支明細表",
       rows: [
@@ -290,28 +378,62 @@
       ]
     };
 
-    let chartInstance = null;
+    let chartBalanceInstance = null;
+    let chartIncomeInstance = null;
+    let chartExpenseInstance = null;
     let dragSrcIndex = null;
 
-    // --- Authentication Logic ---
+    // --- Tab Switcher ---
+    window.switchTab = function(tabName) {
+      window.appState.activeTab = tabName;
+      const btnDetails = document.getElementById('tabBtnDetails');
+      const btnAnalytics = document.getElementById('tabBtnAnalytics');
+      const viewDetails = document.getElementById('tabDetailsView');
+      const viewAnalytics = document.getElementById('tabAnalyticsView');
+
+      if (tabName === 'details') {
+        btnDetails.className = "py-4 px-6 border-b-4 font-black text-base transition duration-150 border-blue-600 text-blue-600 flex items-center gap-2.5";
+        btnAnalytics.className = "py-4 px-6 border-b-4 font-black text-base transition duration-150 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2.5";
+        viewDetails.classList.remove('hidden');
+        viewAnalytics.classList.add('hidden');
+      } else {
+        btnAnalytics.className = "py-4 px-6 border-b-4 font-black text-base transition duration-150 border-blue-600 text-blue-600 flex items-center gap-2.5";
+        btnDetails.className = "py-4 px-6 border-b-4 font-black text-base transition duration-150 border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2.5";
+        viewAnalytics.classList.remove('hidden');
+        viewDetails.classList.add('hidden');
+        updateSummaryAndChart();
+      }
+    };
+
+    // --- Authentication Flow ---
     window.toggleAuthMode = function() {
       window.appState.isRegisterMode = !window.appState.isRegisterMode;
-      const isReg = window.appState.isRegisterMode;
-      document.getElementById('authTitle').innerText = isReg ? '註冊新帳號' : '班費收支紀錄系統';
-      document.getElementById('authBtn').innerText = isReg ? '註冊並登入' : '登入系統';
-      document.getElementById('authToggleText').innerText = isReg ? '已有帳號？' : '尚未擁有帳號？';
-      document.getElementById('authToggleBtn').innerText = isReg ? '立即登入' : '立即註冊';
-      document.getElementById('authError').classList.add('hidden');
+      const title = document.getElementById('authTitle');
+      const btn = document.getElementById('authBtn');
+      const toggleText = document.getElementById('authToggleText');
+      const toggleBtn = document.getElementById('authToggleBtn');
+
+      if (window.appState.isRegisterMode) {
+        title.innerText = "註冊系統新帳號";
+        btn.innerText = "立即註冊並登入";
+        toggleText.innerText = "已有帳號？";
+        toggleBtn.innerText = "返回登入";
+      } else {
+        title.innerText = "班費收支紀錄系統";
+        btn.innerText = "登入系統";
+        toggleText.innerText = "尚未擁有帳號？";
+        toggleBtn.innerText = "立即註冊";
+      }
     };
 
     window.handleAuthSubmit = async function(e) {
       e.preventDefault();
       const email = document.getElementById('authEmail').value.trim();
       const password = document.getElementById('authPassword').value;
-      const errorBox = document.getElementById('authError');
+      const errorDiv = document.getElementById('authError');
       const errorMsg = document.getElementById('authErrorMsg');
 
-      errorBox.classList.add('hidden');
+      errorDiv.classList.add('hidden');
 
       try {
         if (window.appState.isRegisterMode) {
@@ -320,103 +442,159 @@
           await signInWithEmailAndPassword(auth, email, password);
         }
       } catch (err) {
-        errorBox.classList.remove('hidden');
+        errorDiv.classList.remove('hidden');
         errorMsg.innerText = getFriendlyAuthError(err.code);
       }
     };
+
+    function getFriendlyAuthError(code) {
+      switch (code) {
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+        case 'auth/user-not-found':
+          return '電子郵件或密碼不正確';
+        case 'auth/email-already-in-use':
+          return '此電子郵件已被註冊';
+        case 'auth/weak-password':
+          return '密碼長度過短，請輸入至少 6 位字元';
+        case 'auth/invalid-email':
+          return '無效的電子郵件格式';
+        default:
+          return '登入失敗：' + code;
+      }
+    }
 
     window.handleSignOut = function() {
       signOut(auth);
     };
 
-    function getFriendlyAuthError(code) {
-      switch (code) {
-        case 'auth/invalid-email': return '請輸入有效的電子郵件地址。';
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential': return '帳號或密碼錯誤。';
-        case 'auth/email-already-in-use': return '此電子郵件已被註冊。';
-        case 'auth/weak-password': return '密碼長度需至少包含 6 個字元。';
-        default: return '身份驗證失敗，請稍後再試。';
-      }
-    }
-
-    // --- Auth Listener & Database Binding ---
+    // Monitor Auth & Database Realtime Listener
     onAuthStateChanged(auth, (user) => {
       window.appState.user = user;
       const authModal = document.getElementById('authModal');
-      
+      const userEmailDisplay = document.getElementById('userEmailDisplay');
+
       if (user) {
         authModal.classList.add('hidden');
-        document.getElementById('userEmailDisplay').innerText = user.email;
-        setupDatabaseListeners(user.uid);
-        setupConnectionMonitor();
+        userEmailDisplay.innerText = user.email;
+        setupRealtimeDatabaseListener(user.uid);
+        setupConnectedStatusListener();
       } else {
         authModal.classList.remove('hidden');
-        document.getElementById('userEmailDisplay').innerText = '--';
+        userEmailDisplay.innerText = '--';
       }
     });
 
-    // Monitor Firebase Realtime Connection Status
-    function setupConnectionMonitor() {
-      const connectedRef = ref(db, ".info/connected");
+    // --- Firebase Database Synchronization ---
+    function setupConnectedStatusListener() {
+      const connectedRef = ref(db, '.info/connected');
+      const connStatus = document.getElementById('connectionStatus');
       onValue(connectedRef, (snap) => {
-        const connected = snap.val() === true;
-        const statusEl = document.getElementById('connectionStatus');
-        if (connected) {
-          statusEl.className = "flex items-center gap-1.5 font-medium text-emerald-600";
-          statusEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 🟢 已連線`;
+        if (snap.val() === true) {
+          connStatus.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> <span class="text-emerald-400 font-bold">已連線</span>`;
         } else {
-          statusEl.className = "flex items-center gap-1.5 font-medium text-rose-600";
-          statusEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span> 🔴 斷線`;
+          connStatus.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> <span class="text-rose-400 font-bold">已斷線</span>`;
         }
       });
     }
 
-    // Listen to Firebase Realtime Database Data
-    function setupDatabaseListeners(uid) {
-      const userRef = ref(db, `classfund/${uid}`);
+    function setupRealtimeDatabaseListener(uid) {
+      const userRef = ref(db, `classFundData/${uid}`);
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
           if (data.sheetName) window.appState.sheetName = data.sheetName;
           if (data.headerTitle) window.appState.headerTitle = data.headerTitle;
+          if (data.logoUrl !== undefined) window.appState.logoUrl = data.logoUrl;
           if (Array.isArray(data.rows)) window.appState.rows = data.rows;
           if (data.lastSaved) {
             document.getElementById('lastSavedStatus').innerText = `上次儲存時間：${data.lastSaved}`;
           }
-        } else {
-          // Push initial template data for new user
-          saveDataToFirebase();
         }
         renderApp();
       });
     }
 
-    // Auto Save Data to Firebase
     window.saveDataToFirebase = function() {
       if (!window.appState.user) return;
       const uid = window.appState.user.uid;
-      const nowStr = new Date().toLocaleString('zh-TW', { hour12: false });
-      
+      const userRef = ref(db, `classFundData/${uid}`);
+
+      const now = new Date();
+      const timeString = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
       const payload = {
         sheetName: window.appState.sheetName,
         headerTitle: window.appState.headerTitle,
+        logoUrl: window.appState.logoUrl || "",
         rows: window.appState.rows,
-        lastSaved: nowStr
+        lastSaved: timeString
       };
 
-      set(ref(db, `classfund/${uid}`), payload)
-        .then(() => {
-          document.getElementById('lastSavedStatus').innerText = `上次儲存時間：${nowStr}`;
-        })
-        .catch((err) => console.error("Firebase Sync Error:", err));
+      set(userRef, payload);
+    };
+
+    // --- Double-Click Change Logo URL ---
+    window.changeLogoUrl = function() {
+      const currentUrl = window.appState.logoUrl || "";
+      const newUrl = prompt("請貼上新的 Logo 圖片網址 (URL)：", currentUrl);
+      if (newUrl !== null) {
+        window.appState.logoUrl = newUrl.trim();
+        saveDataToFirebase();
+        renderApp();
+      }
+    };
+
+    window.onLogoError = function() {
+      const img = document.getElementById('appLogoImg');
+      const fallback = document.getElementById('appLogoFallback');
+      img.classList.add('hidden');
+      fallback.classList.remove('hidden');
+    };
+
+    function updateLogoDisplay() {
+      const img = document.getElementById('appLogoImg');
+      const fallback = document.getElementById('appLogoFallback');
+      if (window.appState.logoUrl) {
+        img.src = window.appState.logoUrl;
+        img.classList.remove('hidden');
+        fallback.classList.add('hidden');
+      } else {
+        img.classList.add('hidden');
+        fallback.classList.remove('hidden');
+      }
+    }
+
+    // --- Editable Header Elements ---
+    window.makeEditable = function(element, stateKey) {
+      const currentText = element.innerText;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentText;
+      input.className = 'bg-white text-slate-900 border-2 border-blue-600 rounded-lg px-2 py-1 outline-none text-xl font-black w-full max-w-md';
+
+      input.onblur = function() {
+        const val = input.value.trim() || currentText;
+        window.appState[stateKey] = val;
+        saveDataToFirebase();
+        renderApp();
+      };
+
+      input.onkeydown = function(e) {
+        if (e.key === 'Enter') {
+          input.blur();
+        }
+      };
+
+      element.replaceWith(input);
+      input.focus();
     };
 
     // --- Core Rendering & UI Updates ---
     function renderApp() {
       document.getElementById('sheetName').innerText = window.appState.sheetName;
       document.getElementById('headerTitle').innerText = window.appState.headerTitle;
+      updateLogoDisplay();
 
       renderTable();
       updateSummaryAndChart();
@@ -426,50 +604,48 @@
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
-      let runningBalance = 0;
+      let runningBal = 0;
 
       window.appState.rows.forEach((row, index) => {
-        const income = Math.round(Number(row.income) || 0);
-        const expense = Math.round(Number(row.expense) || 0);
-        runningBalance += (income - expense);
-        row.balance = runningBalance; // auto calculated
+        const incomeNum = Math.round(Number(row.income) || 0);
+        const expenseNum = Math.round(Number(row.expense) || 0);
+        runningBal += (incomeNum - expenseNum);
 
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50/80 transition group border-b border-slate-200";
+        tr.className = 'hover:bg-slate-50/80 transition duration-150 group border-b border-slate-300';
         tr.draggable = true;
         tr.dataset.index = index;
 
-        // Drag handlers
         tr.addEventListener('dragstart', handleDragStart);
         tr.addEventListener('dragover', handleDragOver);
         tr.addEventListener('drop', handleDrop);
         tr.addEventListener('dragend', handleDragEnd);
 
         tr.innerHTML = `
-          <td class="py-3 px-3 text-center text-slate-400 drag-handle select-none">
-            <i class="fa-solid fa-grip-vertical hover:text-slate-600"></i>
+          <td class="py-4 px-3 text-center text-slate-400 drag-handle">
+            <i class="fa-solid fa-grip-vertical text-lg hover:text-slate-800"></i>
           </td>
-          <td class="py-3 px-4 border-r border-slate-200 cursor-pointer font-mono text-slate-700" ondblclick="triggerDatePicker(this, ${index})">
-            ${row.date || '2026/10/25'}
+          <td class="py-4 px-6 border-r border-slate-200" ondblclick="openDatePicker(this, ${index})">
+            <span class="cursor-pointer hover:bg-slate-100 px-2 py-1 rounded-lg transition font-mono font-bold text-slate-900">${row.date || '點擊設定'}</span>
           </td>
-          <td class="py-3 px-4 border-r border-slate-200 editable-cell cursor-text" contenteditable="true" onblur="updateRowField(${index}, 'item', this.innerText)">
-            ${escapeHtml(row.item || '')}
+          <td class="py-4 px-6 border-r border-slate-200">
+            <div class="editable-cell px-2 py-1 rounded-lg text-slate-900 outline-none font-bold" contenteditable="true" onblur="updateRowField(${index}, 'item', this.innerText)">${row.item || ''}</div>
           </td>
-          <td class="py-3 px-4 border-r border-slate-200 text-right editable-cell cursor-text font-mono text-emerald-600 font-semibold" contenteditable="true" onblur="updateNumberField(${index}, 'income', this.innerText)">
-            ${income}
+          <td class="py-4 px-6 border-r border-slate-200 text-right">
+            <input type="text" class="w-full text-right bg-transparent outline-none editable-cell px-2 py-1 rounded-lg text-emerald-700 font-black font-mono" value="$${incomeNum.toLocaleString()}" onblur="updateNumberField(${index}, 'income', this.value)" />
           </td>
-          <td class="py-3 px-4 border-r border-slate-200 text-right editable-cell cursor-text font-mono text-rose-600 font-semibold" contenteditable="true" onblur="updateNumberField(${index}, 'expense', this.innerText)">
-            ${expense}
+          <td class="py-4 px-6 border-r border-slate-200 text-right">
+            <input type="text" class="w-full text-right bg-transparent outline-none editable-cell px-2 py-1 rounded-lg text-rose-700 font-black font-mono" value="$${expenseNum.toLocaleString()}" onblur="updateNumberField(${index}, 'expense', this.value)" />
           </td>
-          <td class="py-3 px-4 border-r border-slate-200 text-right font-mono font-bold ${runningBalance < 0 ? 'text-rose-600' : 'text-blue-700'} bg-slate-50/50 select-none">
-            ${runningBalance}
+          <td class="py-4 px-6 border-r border-slate-200 text-right font-black font-mono text-slate-900 bg-slate-50/50">
+            $${runningBal.toLocaleString()}
           </td>
-          <td class="py-3 px-4 border-r border-slate-200 editable-cell cursor-text text-slate-600" contenteditable="true" onblur="updateRowField(${index}, 'note', this.innerText)">
-            ${escapeHtml(row.note || '')}
+          <td class="py-4 px-6 border-r border-slate-200">
+            <div class="editable-cell px-2 py-1 rounded-lg text-slate-700 outline-none font-medium" contenteditable="true" onblur="updateRowField(${index}, 'note', this.innerText)">${row.note || ''}</div>
           </td>
-          <td class="py-3 px-3 text-center">
-            <button onclick="deleteRow(${index})" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg transition" title="刪除明細">
-              <i class="fa-solid fa-trash-can"></i>
+          <td class="py-4 px-3 text-center">
+            <button onclick="deleteRow(${index})" class="text-slate-400 hover:text-rose-600 transition p-2 rounded-lg hover:bg-rose-50" title="刪除此列">
+              <i class="fa-solid fa-trash-can text-lg"></i>
             </button>
           </td>
         `;
@@ -478,70 +654,38 @@
       });
     }
 
-    function escapeHtml(text) {
-      return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    // --- Double-Click Field Editing ---
-    window.makeEditable = function(el, key) {
-      const currentText = el.innerText;
+    window.openDatePicker = function(cell, index) {
+      const currentVal = window.appState.rows[index].date || '';
       const input = document.createElement('input');
-      input.type = 'text';
-      input.value = currentText;
-      input.className = 'border border-blue-500 rounded px-2 py-0.5 text-slate-800 font-bold focus:outline-none w-full max-w-md';
-      
-      input.onblur = function() {
-        const val = input.value.trim() || currentText;
-        window.appState[key] = val;
-        saveDataToFirebase();
-        renderApp();
-      };
+      input.type = 'date';
+      input.className = 'bg-white border-2 border-blue-600 rounded-lg px-2 py-1 text-base font-bold text-slate-900 outline-none font-mono';
 
-      input.onkeydown = function(e) {
-        if (e.key === 'Enter') input.blur();
-      };
+      if (currentVal) {
+        input.value = currentVal.replace(/\//g, '-');
+      }
 
-      el.innerHTML = '';
-      el.appendChild(input);
-      input.focus();
-    };
-
-    // Date Picker Trigger
-    window.triggerDatePicker = function(tdElement, index) {
-      const currentDateStr = window.appState.rows[index].date || '2026/10/25';
-      const formattedDate = currentDateStr.replace(/\//g, '-');
-
-      const dateInput = document.createElement('input');
-      dateInput.type = 'date';
-      dateInput.value = formattedDate;
-      dateInput.className = 'text-xs border border-blue-500 rounded px-1 py-0.5 outline-none font-mono';
-
-      dateInput.onchange = function() {
-        if (dateInput.value) {
-          window.appState.rows[index].date = dateInput.value.replace(/-/g, '/');
+      input.onchange = function() {
+        if (input.value) {
+          const parts = input.value.split('-');
+          window.appState.rows[index].date = `${parts[0]}/${parts[1]}/${parts[2]}`;
           saveDataToFirebase();
           renderApp();
         }
       };
 
-      dateInput.onblur = function() {
-        renderTable();
+      input.onblur = function() {
+        renderApp();
       };
 
-      tdElement.innerHTML = '';
-      tdElement.appendChild(dateInput);
-      dateInput.focus();
-      dateInput.showPicker?.();
+      cell.innerHTML = '';
+      cell.appendChild(input);
+      input.focus();
     };
 
-    // Table Data Mutations
     window.updateRowField = function(index, key, val) {
-      const cleanVal = val.trim();
-      if (window.appState.rows[index][key] !== cleanVal) {
-        window.appState.rows[index][key] = cleanVal;
-        saveDataToFirebase();
-        updateSummaryAndChart();
-      }
+      window.appState.rows[index][key] = val.trim();
+      saveDataToFirebase();
+      renderApp();
     };
 
     window.updateNumberField = function(index, key, val) {
@@ -561,7 +705,7 @@
       window.appState.rows.push({
         id: Date.now().toString(),
         date: `${yyyy}/${mm}/${dd}`,
-        item: '新項目',
+        item: '新收支項目',
         income: 0,
         expense: 0,
         note: ''
@@ -576,7 +720,7 @@
       renderApp();
     };
 
-    // --- Drag & Drop Reordering ---
+    // --- Drag and Drop Handlers ---
     function handleDragStart(e) {
       dragSrcIndex = Number(this.dataset.index);
       this.classList.add('dragging');
@@ -607,7 +751,7 @@
       dragSrcIndex = null;
     }
 
-    // --- Analytics Summary & Chart.js Visualizer ---
+    // --- Analytics Summary & 3 Separate Full-Width Chart Visualizers ---
     function updateSummaryAndChart() {
       let totalIncome = 0;
       let totalExpense = 0;
@@ -638,170 +782,185 @@
         expenseCumulativeData.push(cumExpense);
       });
 
-      // Update Cards
+      // Update Summary Cards
       document.getElementById('statTotalIncome').innerText = `$${totalIncome.toLocaleString()}`;
       document.getElementById('statTotalExpense').innerText = `$${totalExpense.toLocaleString()}`;
       document.getElementById('statBalance').innerText = `$${(totalIncome - totalExpense).toLocaleString()}`;
 
-      // Render Chart
-      const ctx = document.getElementById('financeChart').getContext('2d');
-
-      if (chartInstance) {
-        chartInstance.destroy();
-      }
-
-      chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: chartLabels,
-          datasets: [
-            {
-              label: '逐日累積結餘',
-              data: balanceData,
-              borderColor: '#2563eb',
-              backgroundColor: 'rgba(37, 99, 235, 0.1)',
-              borderWidth: 2.5,
-              tension: 0.3,
-              fill: true,
-              pointRadius: 4,
-              pointBackgroundColor: '#2563eb'
-            },
-            {
-              label: '逐日累積收入',
-              data: incomeCumulativeData,
-              borderColor: '#10b981',
-              borderDash: [4, 4],
-              borderWidth: 2,
-              tension: 0.3,
-              fill: false,
-              pointRadius: 3,
-              pointBackgroundColor: '#10b981'
-            },
-            {
-              label: '逐日累積支出',
-              data: expenseCumulativeData,
-              borderColor: '#f43f5e',
-              borderDash: [4, 4],
-              borderWidth: 2,
-              tension: 0.3,
-              fill: false,
-              pointRadius: 3,
-              pointBackgroundColor: '#f43f5e'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: {
-                font: { family: "'Noto Sans TC', sans-serif", size: 12 }
-              }
-            },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => `${ctx.dataset.label}: $${ctx.raw}`
-              }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false }
-            },
-            y: {
-              ticks: {
-                callback: (value) => '$' + value
-              }
+      const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            titleFont: { size: 14, weight: 'bold' },
+            bodyFont: { size: 14, weight: 'bold' },
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: $${ctx.raw.toLocaleString()}`
             }
           }
+        },
+        scales: {
+          x: { 
+            grid: { display: false },
+            ticks: { font: { size: 12, weight: 'bold' } }
+          },
+          y: { 
+            ticks: { 
+              font: { size: 12, weight: 'bold' },
+              callback: (val) => '$' + val.toLocaleString() 
+            } 
+          }
         }
-      });
+      };
+
+      // 1. Chart - Balance
+      const ctxBal = document.getElementById('chartBalance')?.getContext('2d');
+      if (ctxBal) {
+        if (chartBalanceInstance) chartBalanceInstance.destroy();
+        chartBalanceInstance = new Chart(ctxBal, {
+          type: 'line',
+          data: {
+            labels: chartLabels,
+            datasets: [{
+              label: '累積結餘',
+              data: balanceData,
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.12)',
+              borderWidth: 3,
+              tension: 0.25,
+              fill: true,
+              pointRadius: 5,
+              pointBackgroundColor: '#2563eb'
+            }]
+          },
+          options: commonOptions
+        });
+      }
+
+      // 2. Chart - Income
+      const ctxInc = document.getElementById('chartIncome')?.getContext('2d');
+      if (ctxInc) {
+        if (chartIncomeInstance) chartIncomeInstance.destroy();
+        chartIncomeInstance = new Chart(ctxInc, {
+          type: 'line',
+          data: {
+            labels: chartLabels,
+            datasets: [{
+              label: '累積收入',
+              data: incomeCumulativeData,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.12)',
+              borderWidth: 3,
+              tension: 0.25,
+              fill: true,
+              pointRadius: 5,
+              pointBackgroundColor: '#10b981'
+            }]
+          },
+          options: commonOptions
+        });
+      }
+
+      // 3. Chart - Expense
+      const ctxExp = document.getElementById('chartExpense')?.getContext('2d');
+      if (ctxExp) {
+        if (chartExpenseInstance) chartExpenseInstance.destroy();
+        chartExpenseInstance = new Chart(ctxExp, {
+          type: 'line',
+          data: {
+            labels: chartLabels,
+            datasets: [{
+              label: '累積支出',
+              data: expenseCumulativeData,
+              borderColor: '#f43f5e',
+              backgroundColor: 'rgba(244, 63, 94, 0.12)',
+              borderWidth: 3,
+              tension: 0.25,
+              fill: true,
+              pointRadius: 5,
+              pointBackgroundColor: '#f43f5e'
+            }]
+          },
+          options: commonOptions
+        });
+      }
     }
 
-    // --- Import / Export Handlers ---
+    // --- Export Single Chart PNG ---
+    window.exportSingleChartPNG = function(canvasId, title) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const link = document.createElement('a');
+      link.download = `${window.appState.headerTitle}_${title}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
 
-    // 1. Export Excel (.xlsx)
+    // --- Excel Export & Import ---
     window.exportExcel = function() {
-      const exportData = window.appState.rows.map((r, i) => ({
-        '項次': i + 1,
-        '日期': r.date || '',
-        '項目': r.item || '',
-        '收入': Math.round(Number(r.income) || 0),
-        '支出': Math.round(Number(r.expense) || 0),
-        '累計結餘': Math.round(Number(r.balance) || 0),
-        '備註': r.note || ''
-      }));
+      let runningBal = 0;
+      const exportData = window.appState.rows.map(r => {
+        const inc = Math.round(Number(r.income) || 0);
+        const exp = Math.round(Number(r.expense) || 0);
+        runningBal += (inc - exp);
+        return {
+          '日期': r.date || '',
+          '項目': r.item || '',
+          '收入': inc,
+          '支出': exp,
+          '累計結餘': runningBal,
+          '備註': r.note || ''
+        };
+      });
 
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, window.appState.sheetName || "收支表");
-
-      XLSX.writeFile(workbook, `${window.appState.headerTitle || "班費收支明細"}.xlsx`);
+      XLSX.utils.book_append_sheet(workbook, worksheet, window.appState.sheetName);
+      XLSX.writeFile(workbook, `${window.appState.headerTitle}.xlsx`);
     };
 
-    // 2. Import Excel (.xlsx / .csv)
-    window.importExcel = function(e) {
-      const file = e.target.files[0];
+    window.importExcel = function(event) {
+      const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const data = new Uint8Array(evt.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
 
-          if (jsonData.length > 0) {
-            const importedRows = jsonData.map((row, index) => {
-              const income = Math.round(Number(row['收入'] || row['Income'] || row['income'] || 0));
-              const expense = Math.round(Number(row['支出'] || row['Expense'] || row['expense'] || 0));
-              
-              return {
-                id: Date.now() + '-' + index,
-                date: row['日期'] || row['Date'] || row['date'] || '2026/10/25',
-                item: row['項目'] || row['Item'] || row['item'] || '匯入項目',
-                income: isNaN(income) ? 0 : income,
-                expense: isNaN(expense) ? 0 : expense,
-                note: row['備註'] || row['Notes'] || row['note'] || ''
-              };
-            });
+        if (jsonData && jsonData.length > 0) {
+          const newRows = jsonData.map((row, i) => ({
+            id: Date.now().toString() + i,
+            date: row['日期'] || row['Date'] || '',
+            item: row['項目'] || row['Item'] || '進口項目',
+            income: Math.round(Number(row['收入'] || row['Income']) || 0),
+            expense: Math.round(Number(row['支出'] || row['Expense']) || 0),
+            note: row['備註'] || row['Note'] || ''
+          }));
 
-            window.appState.rows = importedRows;
-            saveDataToFirebase();
-            renderApp();
-          }
-        } catch (err) {
-          alert('解析 Excel 檔案失敗，請確認檔案格式正確。');
+          window.appState.rows = newRows;
+          saveDataToFirebase();
+          renderApp();
         }
       };
       reader.readAsArrayBuffer(file);
     };
 
-    // 3. Export PDF
+    // --- PDF Export ---
     window.exportPDF = function() {
       const element = document.getElementById('pdfExportArea');
       const opt = {
-        margin:       [0.5, 0.5, 0.5, 0.5],
+        margin:       [0.3, 0.3, 0.3, 0.3],
         filename:     `${window.appState.headerTitle}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
       };
 
       html2pdf().set(opt).from(element).save();
-    };
-
-    // 4. Export Chart PNG
-    window.exportChartPNG = function() {
-      const canvas = document.getElementById('financeChart');
-      const link = document.createElement('a');
-      link.download = `${window.appState.headerTitle}_分析圖表.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
     };
 
   </script>
