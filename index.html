@@ -107,7 +107,7 @@
   <header class="bg-[#FFFDF9]/90 backdrop-blur-md sticky top-0 z-30 border-b border-amber-100 shadow-sm">
     <div class="w-full px-6 py-3 flex flex-wrap items-center justify-between gap-4">
       
-      <!-- Logo & Sheet Name -->
+      <!-- Logo & Main Title -->
       <div class="flex items-center space-x-3.5">
         <div id="logoContainer" title="💡 雙擊可變更照片 URL 網址" ondblclick="changeLogoUrl()" class="cursor-pointer group relative w-11 h-11 bg-amber-100/80 rounded-2xl overflow-hidden border border-amber-200 flex items-center justify-center shadow-sm hover:ring-2 hover:ring-amber-300 transition">
           <img id="appLogoImg" src="" class="w-full h-full object-cover hidden" alt="Logo" onerror="onLogoError()" />
@@ -122,7 +122,7 @@
         <div>
           <div class="flex items-center space-x-2">
             <span class="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full border border-amber-200/80">學生手帳</span>
-            <span id="sheetName" title="雙擊可編輯工作表名稱" ondblclick="makeEditable(this, 'sheetName')" class="text-base font-extrabold text-amber-950 hover:bg-amber-50 px-2 py-0.5 rounded-lg cursor-pointer transition border border-transparent hover:border-amber-200">班費收支明細表</span>
+            <span id="mainAppTitle" class="text-base font-extrabold text-amber-950">班費收支管理系統</span>
           </div>
           <div class="flex items-center space-x-3 text-xs text-stone-400 mt-0.5 font-medium">
             <span id="connectionStatus" class="flex items-center gap-1.5 font-bold text-emerald-600">
@@ -146,10 +146,21 @@
       </div>
 
     </div>
+
+    <!-- Sheet Tabs Bar (工作表切換與新增管理) -->
+    <div class="bg-amber-50/50 px-6 py-2 border-t border-amber-100 flex items-center justify-between gap-4 overflow-x-auto">
+      <div class="flex items-center space-x-2 overflow-x-auto py-1" id="sheetTabsContainer">
+        <!-- Sheet Pills Dynamically Rendered -->
+      </div>
+      
+      <button onclick="addNewSheet()" class="shrink-0 bg-white hover:bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-200 shadow-sm transition flex items-center gap-1.5">
+        <i class="fa-solid fa-plus text-amber-600"></i> 新增工作表
+      </button>
+    </div>
   </header>
 
-  <!-- Navigation Tabs - Pill Styling -->
-  <div class="bg-[#FAF8F5]/80 sticky top-[65px] z-20 py-2.5 border-b border-amber-100/60 backdrop-blur-sm">
+  <!-- Navigation Tabs - Pill Styling (功能分頁) -->
+  <div class="bg-[#FAF8F5]/80 sticky top-[108px] z-20 py-2.5 border-b border-amber-100/60 backdrop-blur-sm">
     <div class="w-full px-6 flex space-x-2">
       <button id="tabBtnDetails" onclick="switchTab('details')" class="py-2 px-5 rounded-full font-bold text-sm transition duration-150 bg-amber-500 text-white shadow-sm shadow-amber-200 flex items-center gap-2">
         <i class="fa-solid fa-pen-to-square text-base"></i> 班費明細紀錄
@@ -174,11 +185,13 @@
           
           <!-- Title Section -->
           <div class="mb-6 text-center border-b border-amber-100/60 pb-4">
-            <h1 id="headerTitle" title="雙擊可編輯標題" ondblclick="makeEditable(this, 'headerTitle')" class="text-2xl font-black text-amber-950 tracking-tight hover:bg-amber-50 px-4 py-1.5 rounded-xl inline-block cursor-pointer transition border border-transparent hover:border-amber-200">
-              三年五班第一學期班費收支明細表
-            </h1>
+            <div class="flex items-center justify-center gap-2">
+              <h1 id="headerTitle" title="雙擊可編輯標題" ondblclick="makeEditable(this, 'headerTitle')" class="text-2xl font-black text-amber-950 tracking-tight hover:bg-amber-50 px-4 py-1.5 rounded-xl inline-block cursor-pointer transition border border-transparent hover:border-amber-200">
+                三年五班第一學期班費收支明細表
+              </h1>
+            </div>
             <p class="text-xs font-semibold text-stone-400 mt-1.5 flex items-center justify-center gap-1">
-              <i class="fa-solid fa-note-sticky text-amber-400"></i> 雙擊表格即可直接編輯文字與金額 | 雙擊日期選擇日曆 | 拖曳左側圖示調整順序
+              <i class="fa-solid fa-note-sticky text-amber-400"></i> 雙擊標題或頁籤名稱可自訂 | 雙擊表格編輯金額 | 雙擊日期選擇日曆
             </p>
           </div>
 
@@ -210,8 +223,9 @@
           
           <!-- Quick Action Buttons -->
           <div class="bg-[#FFFDF9] border border-amber-100 rounded-2xl p-5 shadow-sm space-y-3">
-            <h3 class="text-xs font-black uppercase tracking-wider text-amber-800/60 mb-1 flex items-center gap-1.5">
-              <i class="fa-solid fa-list-check text-amber-500"></i> 操作面板
+            <h3 class="text-xs font-black uppercase tracking-wider text-amber-800/60 mb-1 flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-list-check text-amber-500"></i> 操作面板</span>
+              <span class="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60 font-bold" id="currentSheetLabel">Sheet 1</span>
             </h3>
             
             <button onclick="addRow()" class="w-full bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white text-xs font-bold py-3 px-3 rounded-xl transition duration-150 flex items-center justify-center gap-2 shadow-md shadow-amber-100 hover:-translate-y-0.5">
@@ -237,7 +251,7 @@
           <!-- Summary KPI Cards -->
           <div class="bg-[#FFFDF9] border border-amber-100 rounded-2xl p-5 shadow-sm space-y-3.5">
             <h3 class="text-xs font-black uppercase tracking-wider text-amber-800/60 mb-1 flex items-center gap-1.5">
-              <i class="fa-solid fa-calculator text-amber-500"></i> 財務總覽
+              <i class="fa-solid fa-calculator text-amber-500"></i> 當前工作表財務總覽
             </h3>
 
             <!-- 總收入 -->
@@ -290,11 +304,21 @@
           <h2 class="text-lg font-black text-amber-950 flex items-center gap-2">
             <i class="fa-solid fa-chart-line text-amber-500"></i> 財務數據趨勢視覺化分析
           </h2>
-          <p class="text-xs font-semibold text-stone-400 mt-0.5">請使用右側下拉選單切換檢視指標圖表</p>
+          <p class="text-xs font-semibold text-stone-400 mt-0.5">可選擇進行單一工作表或跨全部工作表彙整分析</p>
         </div>
 
-        <!-- Dropdown & Export Button -->
-        <div class="flex items-center space-x-3">
+        <!-- Scope & Dropdown & Export Button -->
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- 分析範圍選擇 (單一工作表 vs 全部工作表) -->
+          <div class="relative">
+            <select id="chartScopeSelect" onchange="switchChartScope(this.value)" class="bg-amber-100/70 border border-amber-200 text-amber-950 text-sm font-extrabold rounded-xl px-4 py-2.5 pr-9 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition cursor-pointer appearance-none shadow-sm">
+              <option value="current">📍 當前工作表分析</option>
+              <option value="all">🌐 全部工作表彙整分析</option>
+            </select>
+            <i class="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-amber-700 pointer-events-none text-xs"></i>
+          </div>
+
+          <!-- 指標選單 -->
           <div class="relative">
             <select id="chartTypeSelect" onchange="switchChartType(this.value)" class="bg-amber-50/80 border border-amber-200 text-amber-950 text-sm font-bold rounded-xl px-4 py-2.5 pr-9 outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition cursor-pointer appearance-none shadow-sm">
               <option value="balance">逐日累積結餘</option>
@@ -367,24 +391,124 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // Global App State
+    // Global App State with Multi-Sheet Support
     window.appState = {
       activeTab: 'details',
       selectedChartType: 'balance', // balance | income | expense
+      selectedChartScope: 'current', // current | all
+      activeSheetIndex: 0,
       user: null,
       isRegisterMode: false,
       logoUrl: "",
-      sheetName: "班費收支明細表",
-      headerTitle: "三年五班第一學期班費收支明細表",
-      rows: [
-        { id: '1', date: '2026/10/01', item: '期初收取班費', income: 5000, expense: 0, note: '全班每人100元' },
-        { id: '2', date: '2026/10/05', item: '購買班級掃具', income: 0, expense: 450, note: '掃把與拖把' },
-        { id: '3', date: '2026/10/12', item: '班會飲料費用', income: 0, expense: 600, note: '慶生會紅茶' }
+      sheets: [
+        {
+          id: 'sheet_1',
+          name: '第一學期班費',
+          headerTitle: '三年五班第一學期班費收支明細表',
+          rows: [
+            { id: '1', date: '2026/10/01', item: '期初收取班費', income: 5000, expense: 0, note: '全班每人100元' },
+            { id: '2', date: '2026/10/05', item: '購買班級掃具', income: 0, expense: 450, note: '掃把與拖把' },
+            { id: '3', date: '2026/10/12', item: '班會飲料費用', income: 0, expense: 600, note: '慶生會紅茶' }
+          ]
+        }
       ]
     };
 
     let activeChartInstance = null;
     let dragSrcIndex = null;
+
+    // Helper: Get Current Active Sheet Object
+    function getActiveSheet() {
+      if (!window.appState.sheets || window.appState.sheets.length === 0) {
+        window.appState.sheets = [{
+          id: 'sheet_default',
+          name: '班費明細',
+          headerTitle: '班費收支明細表',
+          rows: []
+        }];
+        window.appState.activeSheetIndex = 0;
+      }
+      if (window.appState.activeSheetIndex >= window.appState.sheets.length) {
+        window.appState.activeSheetIndex = 0;
+      }
+      return window.appState.sheets[window.appState.activeSheetIndex];
+    }
+
+    // --- Sheet Management ---
+    window.switchSheet = function(index) {
+      window.appState.activeSheetIndex = index;
+      saveDataToFirebase();
+      renderApp();
+    };
+
+    window.addNewSheet = function() {
+      const newIndex = window.appState.sheets.length + 1;
+      window.appState.sheets.push({
+        id: 'sheet_' + Date.now(),
+        name: `工作表 ${newIndex}`,
+        headerTitle: `三年五班第 ${newIndex} 階段班費明細表`,
+        rows: []
+      });
+      window.appState.activeSheetIndex = window.appState.sheets.length - 1;
+      saveDataToFirebase();
+      renderApp();
+    };
+
+    window.duplicateSheet = function(index, e) {
+      if (e) e.stopPropagation();
+      const sourceSheet = window.appState.sheets[index];
+      const clonedRows = sourceSheet.rows.map(r => ({ ...r, id: Date.now().toString() + Math.random().toString(36).substr(2, 4) }));
+      
+      const newSheet = {
+        id: 'sheet_' + Date.now(),
+        name: `${sourceSheet.name} (副本)`,
+        headerTitle: `${sourceSheet.headerTitle} (副本)`,
+        rows: clonedRows
+      };
+
+      window.appState.sheets.splice(index + 1, 0, newSheet);
+      window.appState.activeSheetIndex = index + 1;
+      saveDataToFirebase();
+      renderApp();
+    };
+
+    window.deleteSheet = function(index, e) {
+      if (e) e.stopPropagation();
+      if (window.appState.sheets.length <= 1) {
+        alert("至少必須保留一個工作表！");
+        return;
+      }
+      if (confirm(`確定要刪除工作表「${window.appState.sheets[index].name}」嗎？`)) {
+        window.appState.sheets.splice(index, 1);
+        if (window.appState.activeSheetIndex >= window.appState.sheets.length) {
+          window.appState.activeSheetIndex = window.appState.sheets.length - 1;
+        }
+        saveDataToFirebase();
+        renderApp();
+      }
+    };
+
+    window.renameSheetPrompt = function(index, element) {
+      const currentName = window.appState.sheets[index].name;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentName;
+      input.className = 'bg-white text-amber-950 border border-amber-400 rounded px-2 py-0.5 outline-none font-bold text-xs w-24';
+
+      input.onblur = function() {
+        const val = input.value.trim() || currentName;
+        window.appState.sheets[index].name = val;
+        saveDataToFirebase();
+        renderApp();
+      };
+
+      input.onkeydown = function(e) {
+        if (e.key === 'Enter') input.blur();
+      };
+
+      element.replaceWith(input);
+      input.focus();
+    };
 
     // --- Tab Switcher ---
     window.switchTab = function(tabName) {
@@ -506,10 +630,18 @@
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          if (data.sheetName) window.appState.sheetName = data.sheetName;
-          if (data.headerTitle) window.appState.headerTitle = data.headerTitle;
           if (data.logoUrl !== undefined) window.appState.logoUrl = data.logoUrl;
-          if (Array.isArray(data.rows)) window.appState.rows = data.rows;
+          if (Array.isArray(data.sheets) && data.sheets.length > 0) {
+            window.appState.sheets = data.sheets;
+          } else if (data.rows) {
+            // Migration fallback from single-sheet version
+            window.appState.sheets = [{
+              id: 'sheet_1',
+              name: data.sheetName || '班費明細',
+              headerTitle: data.headerTitle || '班費收支明細表',
+              rows: data.rows
+            }];
+          }
           if (data.lastSaved) {
             document.getElementById('lastSavedStatus').innerText = `上次儲存：${data.lastSaved}`;
           }
@@ -527,10 +659,8 @@
       const timeString = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
       const payload = {
-        sheetName: window.appState.sheetName,
-        headerTitle: window.appState.headerTitle,
         logoUrl: window.appState.logoUrl || "",
-        rows: window.appState.rows,
+        sheets: window.appState.sheets,
         lastSaved: timeString
       };
 
@@ -570,7 +700,8 @@
 
     // --- Editable Header Elements ---
     window.makeEditable = function(element, stateKey) {
-      const currentText = element.innerText;
+      const activeSheet = getActiveSheet();
+      const currentText = activeSheet[stateKey] || element.innerText;
       const input = document.createElement('input');
       input.type = 'text';
       input.value = currentText;
@@ -578,7 +709,7 @@
 
       input.onblur = function() {
         const val = input.value.trim() || currentText;
-        window.appState[stateKey] = val;
+        activeSheet[stateKey] = val;
         saveDataToFirebase();
         renderApp();
       };
@@ -595,21 +726,58 @@
 
     // --- Core Rendering & UI Updates ---
     function renderApp() {
-      document.getElementById('sheetName').innerText = window.appState.sheetName;
-      document.getElementById('headerTitle').innerText = window.appState.headerTitle;
+      const activeSheet = getActiveSheet();
+      document.getElementById('headerTitle').innerText = activeSheet.headerTitle || "班費收支明細表";
+      document.getElementById('currentSheetLabel').innerText = activeSheet.name;
+      
+      renderSheetTabs();
       updateLogoDisplay();
-
       renderTable();
       updateSummaryAndChart();
+    }
+
+    function renderSheetTabs() {
+      const container = document.getElementById('sheetTabsContainer');
+      container.innerHTML = '';
+
+      window.appState.sheets.forEach((sheet, idx) => {
+        const isActive = idx === window.appState.activeSheetIndex;
+        const btn = document.createElement('div');
+        
+        if (isActive) {
+          btn.className = "flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer group";
+        } else {
+          btn.className = "flex items-center gap-1.5 px-3 py-1.5 bg-white text-stone-600 hover:bg-amber-100/60 font-semibold text-xs rounded-xl border border-amber-200/80 cursor-pointer group transition";
+        }
+
+        btn.onclick = () => switchSheet(idx);
+
+        btn.innerHTML = `
+          <span class="truncate max-w-[110px]" title="雙擊可修改名稱" ondblclick="renameSheetPrompt(${idx}, this)">${sheet.name}</span>
+          <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
+            <button onclick="duplicateSheet(${idx}, event)" title="複製此工作表" class="hover:text-amber-200">
+              <i class="fa-solid fa-copy text-[10px]"></i>
+            </button>
+            ${window.appState.sheets.length > 1 ? `
+              <button onclick="deleteSheet(${idx}, event)" title="刪除此工作表" class="${isActive ? 'hover:text-rose-200' : 'hover:text-rose-500'}">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+            ` : ''}
+          </div>
+        `;
+
+        container.appendChild(btn);
+      });
     }
 
     function renderTable() {
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
 
+      const activeSheet = getActiveSheet();
       let runningBal = 0;
 
-      window.appState.rows.forEach((row, index) => {
+      activeSheet.rows.forEach((row, index) => {
         const incomeNum = Math.round(Number(row.income) || 0);
         const expenseNum = Math.round(Number(row.expense) || 0);
         runningBal += (incomeNum - expenseNum);
@@ -658,7 +826,8 @@
     }
 
     window.openDatePicker = function(cell, index) {
-      const currentVal = window.appState.rows[index].date || '';
+      const activeSheet = getActiveSheet();
+      const currentVal = activeSheet.rows[index].date || '';
       const input = document.createElement('input');
       input.type = 'date';
       input.className = 'bg-white border border-amber-400 rounded-lg px-2 py-0.5 text-xs font-bold text-amber-950 outline-none font-mono shadow-sm';
@@ -670,7 +839,7 @@
       input.onchange = function() {
         if (input.value) {
           const parts = input.value.split('-');
-          window.appState.rows[index].date = `${parts[0]}/${parts[1]}/${parts[2]}`;
+          activeSheet.rows[index].date = `${parts[0]}/${parts[1]}/${parts[2]}`;
           saveDataToFirebase();
           renderApp();
         }
@@ -686,26 +855,29 @@
     };
 
     window.updateRowField = function(index, key, val) {
-      window.appState.rows[index][key] = val.trim();
+      const activeSheet = getActiveSheet();
+      activeSheet.rows[index][key] = val.trim();
       saveDataToFirebase();
       renderApp();
     };
 
     window.updateNumberField = function(index, key, val) {
+      const activeSheet = getActiveSheet();
       let num = Math.round(parseFloat(val.replace(/[^0-9.-]/g, '')) || 0);
       if (num < 0) num = 0;
-      window.appState.rows[index][key] = num;
+      activeSheet.rows[index][key] = num;
       saveDataToFirebase();
       renderApp();
     };
 
     window.addRow = function() {
+      const activeSheet = getActiveSheet();
       const today = new Date();
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, '0');
       const dd = String(today.getDate()).padStart(2, '0');
 
-      window.appState.rows.push({
+      activeSheet.rows.push({
         id: Date.now().toString(),
         date: `${yyyy}/${mm}/${dd}`,
         item: '新收支項目',
@@ -718,7 +890,8 @@
     };
 
     window.deleteRow = function(index) {
-      window.appState.rows.splice(index, 1);
+      const activeSheet = getActiveSheet();
+      activeSheet.rows.splice(index, 1);
       saveDataToFirebase();
       renderApp();
     };
@@ -739,10 +912,11 @@
     function handleDrop(e) {
       if (e.stopPropagation) e.stopPropagation();
       const targetIndex = Number(this.dataset.index);
+      const activeSheet = getActiveSheet();
 
       if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
-        const movedItem = window.appState.rows.splice(dragSrcIndex, 1)[0];
-        window.appState.rows.splice(targetIndex, 0, movedItem);
+        const movedItem = activeSheet.rows.splice(dragSrcIndex, 1)[0];
+        activeSheet.rows.splice(targetIndex, 0, movedItem);
         saveDataToFirebase();
         renderApp();
       }
@@ -754,15 +928,45 @@
       dragSrcIndex = null;
     }
 
-    // --- Analytics Chart Switcher & Full-Width Single Chart Render ---
+    // --- Analytics Chart Scope & Switcher ---
+    window.switchChartScope = function(scope) {
+      window.appState.selectedChartScope = scope;
+      updateSummaryAndChart();
+    };
+
     window.switchChartType = function(type) {
       window.appState.selectedChartType = type;
       updateSummaryAndChart();
     };
 
     function updateSummaryAndChart() {
-      let totalIncome = 0;
-      let totalExpense = 0;
+      const activeSheet = getActiveSheet();
+
+      // Calculate current active sheet KPI
+      let curTotalIncome = 0;
+      let curTotalExpense = 0;
+      activeSheet.rows.forEach(r => {
+        curTotalIncome += Math.round(Number(r.income) || 0);
+        curTotalExpense += Math.round(Number(r.expense) || 0);
+      });
+
+      document.getElementById('statTotalIncome').innerText = `$${curTotalIncome.toLocaleString()}`;
+      document.getElementById('statTotalExpense').innerText = `$${curTotalExpense.toLocaleString()}`;
+      document.getElementById('statBalance').innerText = `$${(curTotalIncome - curTotalExpense).toLocaleString()}`;
+
+      // Build target rows for chart analytics (current vs all)
+      let targetRows = [];
+      const scope = window.appState.selectedChartScope || 'current';
+
+      if (scope === 'all') {
+        // Collect rows across all sheets and sort by date
+        window.appState.sheets.forEach(s => {
+          targetRows.push(...(s.rows || []));
+        });
+        targetRows.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      } else {
+        targetRows = activeSheet.rows;
+      }
 
       const chartLabels = [];
       const balanceData = [];
@@ -773,14 +977,11 @@
       let cumIncome = 0;
       let cumExpense = 0;
 
-      window.appState.rows.forEach(r => {
+      targetRows.forEach(r => {
         const inc = Math.round(Number(r.income) || 0);
         const exp = Math.round(Number(r.expense) || 0);
 
-        totalIncome += inc;
-        totalExpense += exp;
         runningBal += (inc - exp);
-
         cumIncome += inc;
         cumExpense += exp;
 
@@ -790,12 +991,7 @@
         expenseCumulativeData.push(cumExpense);
       });
 
-      // Update Summary KPI Cards
-      document.getElementById('statTotalIncome').innerText = `$${totalIncome.toLocaleString()}`;
-      document.getElementById('statTotalExpense').innerText = `$${totalExpense.toLocaleString()}`;
-      document.getElementById('statBalance').innerText = `$${(totalIncome - totalExpense).toLocaleString()}`;
-
-      // Render Single Selected Full-Width Chart
+      // Render Active Chart
       const chartType = window.appState.selectedChartType;
       const ctx = document.getElementById('activeAnalyticsChart')?.getContext('2d');
       const chartTitleEl = document.getElementById('currentChartTitle');
@@ -806,12 +1002,14 @@
         activeChartInstance.destroy();
       }
 
+      const scopeText = scope === 'all' ? '【跨全部工作表彙整】' : `【${activeSheet.name}】`;
+
       let chartConfig = {
         label: '',
         data: [],
         borderColor: '#f59e0b', // 焦糖黃棕
         backgroundColor: 'rgba(245, 158, 11, 0.15)',
-        titleText: '逐日累積結餘圖表',
+        titleText: `${scopeText} 逐日累積結餘圖表`,
         dotClass: 'w-3 h-3 rounded-full bg-amber-500 inline-block'
       };
 
@@ -821,7 +1019,7 @@
           data: incomeCumulativeData,
           borderColor: '#10b981', // 抹茶綠
           backgroundColor: 'rgba(16, 185, 129, 0.15)',
-          titleText: '逐日累積收入圖表',
+          titleText: `${scopeText} 逐日累積收入圖表`,
           dotClass: 'w-3 h-3 rounded-full bg-emerald-500 inline-block'
         };
       } else if (chartType === 'expense') {
@@ -830,7 +1028,7 @@
           data: expenseCumulativeData,
           borderColor: '#f43f5e', // 櫻花粉紅
           backgroundColor: 'rgba(244, 63, 94, 0.15)',
-          titleText: '逐日累積支出圖表',
+          titleText: `${scopeText} 逐日累積支出圖表`,
           dotClass: 'w-3 h-3 rounded-full bg-rose-500 inline-block'
         };
       } else {
@@ -839,7 +1037,7 @@
           data: balanceData,
           borderColor: '#f59e0b',
           backgroundColor: 'rgba(245, 158, 11, 0.15)',
-          titleText: '逐日累積結餘圖表',
+          titleText: `${scopeText} 逐日累積結餘圖表`,
           dotClass: 'w-3 h-3 rounded-full bg-amber-500 inline-block'
         };
       }
@@ -900,22 +1098,25 @@
     window.exportCurrentChartPNG = function() {
       const canvas = document.getElementById('activeAnalyticsChart');
       if (!canvas) return;
+      const activeSheet = getActiveSheet();
       const typeNames = {
         balance: '逐日累積結餘',
         income: '逐日累積收入',
         expense: '逐日累積支出'
       };
+      const scope = window.appState.selectedChartScope === 'all' ? '全部彙整' : activeSheet.name;
       const name = typeNames[window.appState.selectedChartType] || '財務圖表';
       const link = document.createElement('a');
-      link.download = `${window.appState.headerTitle}_${name}.png`;
+      link.download = `${scope}_${name}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     };
 
     // --- Excel Export ---
     window.exportExcel = function() {
+      const activeSheet = getActiveSheet();
       let runningBal = 0;
-      const exportData = window.appState.rows.map(r => {
+      const exportData = activeSheet.rows.map(r => {
         const inc = Math.round(Number(r.income) || 0);
         const exp = Math.round(Number(r.expense) || 0);
         runningBal += (inc - exp);
@@ -931,15 +1132,14 @@
 
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, window.appState.sheetName);
-      XLSX.writeFile(workbook, `${window.appState.headerTitle}.xlsx`);
+      XLSX.utils.book_append_sheet(workbook, worksheet, activeSheet.name);
+      XLSX.writeFile(workbook, `${activeSheet.headerTitle}.xlsx`);
     };
 
-    // --- Excel 日期解析輔助函式 (修正 Excel 序列號 45551 轉 YYYY/MM/DD) ---
+    // --- Excel 日期解析輔助函式 ---
     function parseExcelDate(val) {
       if (!val) return '';
       
-      // 1. 如果已是 Date 物件
       if (val instanceof Date) {
         const yyyy = val.getFullYear();
         const mm = String(val.getMonth() + 1).padStart(2, '0');
@@ -947,7 +1147,6 @@
         return `${yyyy}/${mm}/${dd}`;
       }
 
-      // 2. 如果是 Excel 日期序列數字 (例如 45551)
       if (typeof val === 'number' || (!isNaN(val) && !String(val).includes('/') && !String(val).includes('-'))) {
         const serial = Number(val);
         const utc_days = Math.floor(serial - 25569);
@@ -960,7 +1159,6 @@
         return `${yyyy}/${mm}/${dd}`;
       }
 
-      // 3. 如果是字串格式 (如 "2024-09-16" 或 "2024/9/16")
       let dateStr = String(val).trim().replace(/-/g, '/');
       const parts = dateStr.split('/');
       if (parts.length === 3) {
@@ -990,7 +1188,7 @@
             const rawDate = row['日期'] || row['Date'] || '';
             return {
               id: Date.now().toString() + i,
-              date: parseExcelDate(rawDate), // 自動轉換為 YYYY/MM/DD
+              date: parseExcelDate(rawDate),
               item: row['項目'] || row['Item'] || '進口項目',
               income: Math.round(Number(row['收入'] || row['Income']) || 0),
               expense: Math.round(Number(row['支出'] || row['Expense']) || 0),
@@ -998,7 +1196,8 @@
             };
           });
 
-          window.appState.rows = newRows;
+          const activeSheet = getActiveSheet();
+          activeSheet.rows = newRows;
           saveDataToFirebase();
           renderApp();
         }
@@ -1009,9 +1208,10 @@
     // --- PDF Export ---
     window.exportPDF = function() {
       const element = document.getElementById('pdfExportArea');
+      const activeSheet = getActiveSheet();
       const opt = {
         margin:       [0.3, 0.3, 0.3, 0.3],
-        filename:     `${window.appState.headerTitle}.pdf`,
+        filename:     `${activeSheet.headerTitle}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
